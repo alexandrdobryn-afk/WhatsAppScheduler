@@ -3,7 +3,7 @@
 Signed APK:
 
 ```text
-https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk
+https://github.com/alexandrdobryn-afk/WhatsAppScheduler/releases/latest/download/app-release.apk
 ```
 
 SHA-256:

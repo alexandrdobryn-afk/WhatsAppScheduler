@@ -9,7 +9,7 @@ interact with the official WhatsApp application.
 
 **No WhatsApp Business API · No server · No root · Local-first**
 
-[Download latest APK](https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk)
+[Download latest APK](https://github.com/alexandrdobryn-afk/WhatsAppScheduler/releases/latest/download/app-release.apk)
 
 Current Android package name:
 
@@ -65,7 +65,7 @@ set is:
 ## Install
 
 1. Open the APK link on the Android phone:
-   [download/app-release.apk](https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk).
+   [download/app-release.apk](https://github.com/alexandrdobryn-afk/WhatsAppScheduler/releases/latest/download/app-release.apk).
 2. Android will ask whether to allow installing unknown apps from the browser or
    file manager you used. Allow it for that source.
 3. Install WA Schedule.
