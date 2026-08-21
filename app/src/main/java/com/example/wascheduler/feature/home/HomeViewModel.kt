@@ -78,4 +78,11 @@ class HomeViewModel @Inject constructor(
             alarmScheduler.rescheduleNext()
         }
     }
+
+    fun deleteRule(ruleId: Long) {
+        viewModelScope.launch {
+            ruleRepository.deleteRule(ruleId)
+            alarmScheduler.rescheduleNext()
+        }
+    }
 }

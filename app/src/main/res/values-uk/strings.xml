@@ -44,7 +44,9 @@
     <string name="day_sunday_short">Нд</string>
     <string name="rule_editor_save">Зберегти</string>
     <string name="rule_editor_delete">Видалити розклад</string>
-    <string name="rule_editor_delete_confirm">Видалити розклад \"%1$s\"?</string>
+    <string name="rule_delete_title">Видалити завдання?</string>
+    <string name="rule_delete_body">Ця дія скасує всі майбутні надсилання за цим розкладом.</string>
+    <string name="rule_deleted_snackbar">Завдання видалено</string>
 
     <string name="test_send_confirm_title">Буде надіслано</string>
     <string name="test_send_confirm_group">Група</string>
@@ -52,6 +54,8 @@
     <string name="action_cancel">Скасувати</string>
     <string name="action_send_test">Надіслати тест</string>
     <string name="action_delete">Видалити</string>
+    <string name="action_edit">Редагувати</string>
+    <string name="action_more">Ще</string>
     <string name="action_discard">Не зберігати</string>
     <string name="action_back">Назад</string>
     <string name="action_ok">OK</string>
@@ -142,6 +146,14 @@
     <string name="onboarding_allow">Дозволити</string>
     <string name="onboarding_check">Перевірити</string>
     <string name="onboarding_continue">Продовжити</string>
+    <string name="onboarding_status_not_enabled">Не ввімкнено</string>
+    <string name="onboarding_status_allowed">Дозволено</string>
+    <string name="onboarding_status_recommended">Рекомендовано</string>
+    <string name="onboarding_action_done">Готово</string>
+    <string name="onboarding_accessibility_description">Відкриває потрібний чат WhatsApp, вводить заданий текст і натискає надсилання.</string>
+    <string name="onboarding_notifications_description">Показують результат надсилання та помилки.</string>
+    <string name="onboarding_exact_alarm_description">Потрібні, щоб запускати розклад точно у вибраний час.</string>
+    <string name="onboarding_battery_description">Рекомендовано вимкнути обмеження батареї, щоб фонові надсилання не зупинялися системою.</string>
 
     <string name="notification_channel_result">Результат надсилання</string>
     <string name="notification_sent_title">Повідомлення надіслано</string>

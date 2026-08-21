@@ -74,4 +74,10 @@ interface RuleDao {
         replaceRuleTimes(ruleId, times.map { it.copy(ruleId = ruleId) })
         return ruleId
     }
+
+    @Transaction
+    suspend fun deleteRuleWithTimes(ruleId: Long) {
+        deleteTimesForRule(ruleId)
+        deleteRule(ruleId)
+    }
 }

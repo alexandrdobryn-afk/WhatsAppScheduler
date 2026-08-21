@@ -19,9 +19,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -39,6 +43,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -68,6 +75,7 @@ private val startDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(
 fun RuleEditorScreen(viewModel: RuleEditorViewModel, onDone: () -> Unit) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    var topMenuExpanded by remember { mutableStateOf(false) }
 
     BackHandler { viewModel.requestClose() }
 
@@ -84,6 +92,26 @@ fun RuleEditorScreen(viewModel: RuleEditorViewModel, onDone: () -> Unit) {
                 navigationIcon = {
                     IconButton(onClick = viewModel::requestClose) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                    }
+                },
+                actions = {
+                    if (!state.isNew) {
+                        IconButton(onClick = { topMenuExpanded = true }) {
+                            Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.action_more))
+                        }
+                        DropdownMenu(
+                            expanded = topMenuExpanded,
+                            onDismissRequest = { topMenuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action_delete)) },
+                                leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                                onClick = {
+                                    topMenuExpanded = false
+                                    viewModel.requestDelete()
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -300,8 +328,8 @@ fun RuleEditorScreen(viewModel: RuleEditorViewModel, onDone: () -> Unit) {
     if (state.showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = viewModel::dismissDeleteConfirm,
-            title = { Text(stringResource(R.string.rule_editor_delete)) },
-            text = { Text(stringResource(R.string.rule_editor_delete_confirm, state.name.ifBlank { state.chatName })) },
+            title = { Text(stringResource(R.string.rule_delete_title)) },
+            text = { Text(stringResource(R.string.rule_delete_body)) },
             confirmButton = {
                 TextButton(onClick = viewModel::confirmDelete) { Text(stringResource(R.string.action_delete)) }
             },

@@ -2,17 +2,25 @@ package com.example.wascheduler.feature.onboarding
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
@@ -77,81 +85,145 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onContinue: () -> Unit) {
     LaunchedEffect(Unit) { viewModel.refresh() }
     DisposableEffectOnResume(lifecycleOwner) { viewModel.refresh() }
 
-    Scaffold { padding ->
-        Column(
+    val criticalOk = state?.let { it.whatsAppInstalled && it.accessibilityEnabled && it.exactAlarmAllowed } == true
+
+    Scaffold(
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Button(
+                    onClick = { viewModel.markCompleted(); onContinue() },
+                    enabled = criticalOk,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.onboarding_continue))
+                }
+            }
+        }
+    ) { padding ->
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
+                .padding(padding),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OnboardingStep(
-                title = stringResource(R.string.onboarding_step_accessibility_title),
-                granted = state?.accessibilityEnabled,
-                actionLabel = stringResource(R.string.onboarding_open_settings),
-                onAction = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
-            )
-            OnboardingStep(
-                title = stringResource(R.string.onboarding_step_notifications_title),
-                granted = state?.notificationsEnabled,
-                actionLabel = stringResource(R.string.onboarding_allow),
-                onAction = {
-                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                    context.startActivity(intent)
-                }
-            )
-            OnboardingStep(
-                title = stringResource(R.string.onboarding_step_exact_alarm_title),
-                granted = state?.exactAlarmAllowed,
-                actionLabel = stringResource(R.string.onboarding_allow),
-                onAction = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            item {
+                OnboardingStep(
+                    title = stringResource(R.string.onboarding_step_accessibility_title),
+                    description = stringResource(R.string.onboarding_accessibility_description),
+                    granted = state?.accessibilityEnabled,
+                    required = true,
+                    actionLabel = stringResource(R.string.onboarding_open_settings),
+                    onAction = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+                )
+            }
+            item {
+                OnboardingStep(
+                    title = stringResource(R.string.onboarding_step_notifications_title),
+                    description = stringResource(R.string.onboarding_notifications_description),
+                    granted = state?.notificationsEnabled,
+                    required = true,
+                    actionLabel = stringResource(R.string.onboarding_allow),
+                    onAction = {
+                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                            .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                        context.startActivity(intent)
+                    }
+                )
+            }
+            item {
+                OnboardingStep(
+                    title = stringResource(R.string.onboarding_step_exact_alarm_title),
+                    description = stringResource(R.string.onboarding_exact_alarm_description),
+                    granted = state?.exactAlarmAllowed,
+                    required = true,
+                    actionLabel = stringResource(R.string.onboarding_allow),
+                    onAction = {
                         context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
                     }
-                }
-            )
-            OnboardingStep(
-                title = stringResource(R.string.onboarding_step_battery_title),
-                granted = state?.batteryUnrestricted,
-                actionLabel = stringResource(R.string.onboarding_check),
-                onAction = {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))
-                    context.startActivity(intent)
-                }
-            )
-
-            androidx.compose.foundation.layout.Spacer(Modifier.padding(top = 16.dp))
-            val criticalOk = state?.let { it.whatsAppInstalled && it.accessibilityEnabled && it.exactAlarmAllowed } == true
-            Button(
-                onClick = { viewModel.markCompleted(); onContinue() },
-                enabled = criticalOk,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.onboarding_continue))
+                )
+            }
+            item {
+                OnboardingStep(
+                    title = stringResource(R.string.onboarding_step_battery_title),
+                    description = stringResource(R.string.onboarding_battery_description),
+                    granted = state?.batteryUnrestricted,
+                    required = false,
+                    actionLabel = stringResource(R.string.onboarding_check),
+                    onAction = {
+                        val intent = Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:${context.packageName}")
+                        )
+                        context.startActivity(intent)
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun OnboardingStep(title: String, granted: Boolean?, actionLabel: String, onAction: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = if (granted == true) Icons.Filled.CheckCircle else Icons.Filled.Warning,
-                contentDescription = null,
-                tint = if (granted == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-            )
-            Text(title, modifier = Modifier.padding(start = 8.dp))
-        }
-        if (granted != true) {
-            Button(onClick = onAction) { Text(actionLabel) }
+private fun OnboardingStep(
+    title: String,
+    description: String,
+    granted: Boolean?,
+    required: Boolean,
+    actionLabel: String,
+    onAction: () -> Unit
+) {
+    val isGranted = granted == true
+    val statusText = when {
+        isGranted -> stringResource(R.string.onboarding_status_allowed)
+        required -> stringResource(R.string.onboarding_status_not_enabled)
+        else -> stringResource(R.string.onboarding_status_recommended)
+    }
+    val statusColor = when {
+        isGranted -> MaterialTheme.colorScheme.primary
+        required -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.tertiary
+    }
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.Top) {
+                Icon(
+                    imageVector = if (isGranted) Icons.Filled.CheckCircle else Icons.Filled.Warning,
+                    contentDescription = null,
+                    tint = statusColor,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(title, style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(4.dp))
+                    Text(description, style = MaterialTheme.typography.bodySmall)
+                    Spacer(Modifier.height(8.dp))
+                    Text(statusText, color = statusColor, style = MaterialTheme.typography.labelLarge)
+                }
+            }
+            if (isGranted) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.onboarding_action_done),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.align(Alignment.End)
+                )
+            } else {
+                Spacer(Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = onAction,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(actionLabel)
+                }
+            }
         }
     }
 }

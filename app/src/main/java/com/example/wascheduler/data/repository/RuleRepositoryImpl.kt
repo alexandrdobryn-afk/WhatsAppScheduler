@@ -37,6 +37,6 @@ class RuleRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteRule(ruleId: Long) {
-        ruleDao.deleteRule(ruleId)
+        ruleDao.deleteRuleWithTimes(ruleId)
     }
 }
