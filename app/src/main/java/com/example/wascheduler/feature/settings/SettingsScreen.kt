@@ -1,0 +1,368 @@
+package com.example.wascheduler.feature.settings
+
+import android.app.LocaleManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.os.LocaleList
+import android.provider.Settings
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.wascheduler.R
+import com.example.wascheduler.core.permissions.PermissionChecker
+import com.example.wascheduler.core.permissions.PermissionState
+import com.example.wascheduler.core.scheduler.AlarmScheduler
+import com.example.wascheduler.data.repository.AppLanguage
+import com.example.wascheduler.data.repository.AppTheme
+import com.example.wascheduler.data.repository.ScheduleTimeZoneMode
+import com.example.wascheduler.data.repository.SettingsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import javax.inject.Inject
+
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val settingsRepository: SettingsRepository,
+    private val alarmScheduler: AlarmScheduler,
+    private val permissionChecker: PermissionChecker
+) : ViewModel() {
+    val theme: Flow<AppTheme> = settingsRepository.theme
+    val language: Flow<AppLanguage> = settingsRepository.language
+    val notifyOnSuccess: Flow<Boolean> = settingsRepository.notifyOnSuccess
+    val maxRetryAttempts: Flow<Int> = settingsRepository.maxRetryAttempts
+    val timeZoneMode: Flow<ScheduleTimeZoneMode> = settingsRepository.scheduleTimeZoneMode
+    val customTimeZoneId: Flow<String> = settingsRepository.customTimeZoneId
+    val scheduleZoneId: Flow<ZoneId> = settingsRepository.scheduleZoneId
+
+    private val _permissionState = MutableStateFlow<PermissionState?>(null)
+    val permissionState: StateFlow<PermissionState?> = _permissionState.asStateFlow()
+
+    init {
+        refreshPermissions()
+        clearSystemAppLocale()
+    }
+
+    fun refreshPermissions() {
+        _permissionState.value = permissionChecker.currentState()
+    }
+
+    fun setTheme(theme: AppTheme) = viewModelScope.launch { settingsRepository.setTheme(theme) }
+
+    fun setLanguage(language: AppLanguage) = viewModelScope.launch {
+        settingsRepository.setLanguage(language)
+        clearSystemAppLocale()
+    }
+
+    private fun clearSystemAppLocale() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.getSystemService(LocaleManager::class.java)
+                .applicationLocales = LocaleList.getEmptyLocaleList()
+        }
+    }
+
+    fun setNotifyOnSuccess(enabled: Boolean) = viewModelScope.launch {
+        settingsRepository.setNotifyOnSuccess(enabled)
+    }
+
+    fun setRetryAttempts(count: Int) = viewModelScope.launch {
+        settingsRepository.setMaxRetryAttempts(count)
+    }
+
+    fun setTimeZoneMode(mode: ScheduleTimeZoneMode) = viewModelScope.launch {
+        settingsRepository.setScheduleTimeZoneMode(mode)
+        alarmScheduler.rescheduleNext()
+    }
+
+    fun setCustomTimeZone(zoneId: String) = viewModelScope.launch {
+        settingsRepository.setCustomTimeZoneId(zoneId)
+        alarmScheduler.rescheduleNext()
+    }
+
+    fun rescheduleNow() = viewModelScope.launch {
+        settingsRepository.scheduleZoneId.first()
+        alarmScheduler.rescheduleNext()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) {
+    val context = LocalContext.current
+    val theme by viewModel.theme.collectAsState(initial = AppTheme.SYSTEM)
+    val language by viewModel.language.collectAsState(initial = AppLanguage.SYSTEM)
+    val notifyOnSuccess by viewModel.notifyOnSuccess.collectAsState(initial = true)
+    val maxRetryAttempts by viewModel.maxRetryAttempts.collectAsState(initial = 3)
+    val timeZoneMode by viewModel.timeZoneMode.collectAsState(initial = ScheduleTimeZoneMode.DEVICE)
+    val customTimeZoneId by viewModel.customTimeZoneId.collectAsState(initial = SettingsRepository.DEFAULT_CUSTOM_ZONE_ID)
+    val scheduleZoneId by viewModel.scheduleZoneId.collectAsState(initial = ZoneId.systemDefault())
+    val permissionState by viewModel.permissionState.collectAsState()
+    var zoneQuery by remember { mutableStateOf(customTimeZoneId) }
+
+    LaunchedEffect(customTimeZoneId) {
+        zoneQuery = customTimeZoneId
+    }
+    LaunchedEffect(Unit) {
+        viewModel.refreshPermissions()
+    }
+
+    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.settings_title)) }) }) { padding ->
+        LazyColumn(
+            modifier = Modifier.padding(padding).fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            item {
+                SettingsSection(title = stringResource(R.string.settings_general)) {
+                    Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleSmall)
+                    ChoiceRow(AppTheme.SYSTEM, theme, R.string.settings_theme_system, viewModel::setTheme)
+                    ChoiceRow(AppTheme.LIGHT, theme, R.string.settings_theme_light, viewModel::setTheme)
+                    ChoiceRow(AppTheme.DARK, theme, R.string.settings_theme_dark, viewModel::setTheme)
+
+                    Text(
+                        stringResource(R.string.settings_language),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
+                    ChoiceRow(AppLanguage.SYSTEM, language, R.string.settings_language_system, viewModel::setLanguage)
+                    ChoiceRow(AppLanguage.RU, language, R.string.settings_language_ru, viewModel::setLanguage)
+                    ChoiceRow(AppLanguage.UK, language, R.string.settings_language_uk, viewModel::setLanguage)
+                    ChoiceRow(AppLanguage.EN, language, R.string.settings_language_en, viewModel::setLanguage)
+                }
+            }
+
+            item {
+                SettingsSection(title = stringResource(R.string.settings_schedule)) {
+                    Text(stringResource(R.string.settings_schedule_timezone), style = MaterialTheme.typography.titleSmall)
+                    ChoiceRow(
+                        ScheduleTimeZoneMode.DEVICE,
+                        timeZoneMode,
+                        R.string.settings_timezone_device,
+                        viewModel::setTimeZoneMode
+                    )
+                    ChoiceRow(
+                        ScheduleTimeZoneMode.CUSTOM,
+                        timeZoneMode,
+                        R.string.settings_timezone_custom,
+                        viewModel::setTimeZoneMode
+                    )
+                    OutlinedTextField(
+                        value = zoneQuery,
+                        onValueChange = { zoneQuery = it },
+                        label = { Text(stringResource(R.string.settings_timezone_search)) },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        singleLine = true,
+                        isError = runCatching { ZoneId.of(zoneQuery) }.isFailure
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        val zones = filteredZones(zoneQuery)
+                        zones.forEach { zone: String ->
+                            FilterChip(
+                                selected = scheduleZoneId.id == zone,
+                                onClick = { viewModel.setCustomTimeZone(zone) },
+                                label = { Text("$zone ${zoneOffsetLabel(zone)}") }
+                            )
+                        }
+                    }
+                    if (runCatching { ZoneId.of(zoneQuery) }.isSuccess) {
+                        TextButton(onClick = { viewModel.setCustomTimeZone(zoneQuery) }) {
+                            Text(stringResource(R.string.action_ok))
+                        }
+                    }
+                    SettingsValueRow(stringResource(R.string.settings_device_timezone), ZoneId.systemDefault().id)
+                    SettingsValueRow(stringResource(R.string.settings_schedule_timezone_current), scheduleZoneId.id)
+                    SettingsValueRow(
+                        stringResource(R.string.settings_scheduler_current_time),
+                        ZonedDateTime.now(scheduleZoneId).format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
+                    )
+                }
+            }
+
+            item {
+                SettingsSection(title = stringResource(R.string.settings_automation)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(stringResource(R.string.settings_notifications_success), modifier = Modifier.weight(1f))
+                        Switch(checked = notifyOnSuccess, onCheckedChange = viewModel::setNotifyOnSuccess)
+                    }
+                    Text(
+                        stringResource(R.string.settings_retry_attempts),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        val retryChoices = listOf(
+                            0 to R.string.retry_0,
+                            1 to R.string.retry_1,
+                            2 to R.string.retry_2,
+                            3 to R.string.retry_3
+                        )
+                        retryChoices.forEach { choice: Pair<Int, Int> ->
+                            val (count, labelRes) = choice
+                            FilterChip(
+                                selected = maxRetryAttempts == count,
+                                onClick = { viewModel.setRetryAttempts(count) },
+                                label = { Text(stringResource(labelRes)) }
+                            )
+                        }
+                    }
+                    OutlinedButton(onClick = viewModel::rescheduleNow, modifier = Modifier.padding(top = 12.dp)) {
+                        Text(stringResource(R.string.settings_reschedule_now))
+                    }
+                }
+            }
+
+            item {
+                SettingsSection(title = stringResource(R.string.settings_permissions)) {
+                    PermissionRow(stringResource(R.string.diagnostics_whatsapp_installed), permissionState?.whatsAppInstalled)
+                    PermissionRow(stringResource(R.string.diagnostics_accessibility), permissionState?.accessibilityEnabled)
+                    PermissionRow(stringResource(R.string.diagnostics_notifications), permissionState?.notificationsEnabled)
+                    PermissionRow(stringResource(R.string.diagnostics_exact_alarm), permissionState?.exactAlarmAllowed)
+                    PermissionRow(stringResource(R.string.settings_background_usage), permissionState?.batteryUnrestricted)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }) {
+                            Text(stringResource(R.string.onboarding_step_accessibility_title))
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            OutlinedButton(onClick = { context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)) }) {
+                                Text(stringResource(R.string.onboarding_step_exact_alarm_title))
+                            }
+                        }
+                        OutlinedButton(onClick = { context.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }) {
+                            Text(stringResource(R.string.onboarding_step_battery_title))
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                context.startActivity(
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        setData(Uri.parse("package:${context.packageName}"))
+                                    }
+                                )
+                            }
+                        ) {
+                            Text(stringResource(R.string.settings_app_permissions))
+                        }
+                    }
+                }
+            }
+
+            item {
+                SettingsSection(title = stringResource(R.string.diagnostics_title)) {
+                    TextButton(onClick = onOpenDiagnostics) {
+                        Text(stringResource(R.string.settings_diagnostics))
+                    }
+                    TextButton(onClick = onOpenDiagnostics) {
+                        Text(stringResource(R.string.settings_export_report))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            content()
+        }
+    }
+}
+
+@Composable
+private fun <T> ChoiceRow(value: T, current: T, labelRes: Int, onSelected: (T) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        RadioButton(selected = value == current, onClick = { onSelected(value) })
+        Text(stringResource(labelRes), modifier = Modifier.padding(start = 4.dp))
+    }
+}
+
+@Composable
+private fun SettingsValueRow(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label)
+        Text(value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun PermissionRow(label: String, ok: Boolean?) {
+    SettingsValueRow(
+        label = label,
+        value = when (ok) {
+            true -> stringResource(R.string.status_ok)
+            false -> stringResource(R.string.status_attention)
+            null -> stringResource(R.string.status_unknown)
+        }
+    )
+}
+
+private fun filteredZones(query: String): List<String> {
+    val preferred = listOf("Europe/Kyiv", "UTC", "Europe/Warsaw", "Europe/Berlin", "Asia/Dubai", "America/New_York")
+    val normalized = query.trim()
+    if (normalized.isBlank()) return preferred
+    return ZoneId.getAvailableZoneIds()
+        .asSequence()
+        .filter { it.contains(normalized, ignoreCase = true) }
+        .sorted()
+        .take(8)
+        .toList()
+        .ifEmpty { preferred.filter { it.contains(normalized, ignoreCase = true) } }
+}
+
+private fun zoneOffsetLabel(zoneId: String): String =
+    runCatching {
+        val offset = ZonedDateTime.now(ZoneId.of(zoneId)).offset.id
+        "UTC$offset"
+    }.getOrDefault("")

@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WA Schedule - Scheduled WhatsApp Messages for Android</title>
+  <meta name="description" content="WA Schedule is a local Android app for scheduled WhatsApp messages, automatic WhatsApp group messages, and personal WhatsApp scheduling on Android.">
+  <meta name="keywords" content="WhatsApp scheduler Android, scheduled WhatsApp messages, automatic WhatsApp group messages, Android WhatsApp scheduled sender, personal WhatsApp automation, AccessibilityService, Kotlin, Jetpack Compose">
+  <meta property="og:title" content="WA Schedule - Scheduled WhatsApp Messages for Android">
+  <meta property="og:description" content="Schedule WhatsApp group messages on Android from your own phone.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alexandrdobryn-afk.github.io/WhatsAppScheduler/">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://alexandrdobryn-afk.github.io/WhatsAppScheduler/">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f8fb;
+      --text: #111827;
+      --muted: #4b5563;
+      --panel: #ffffff;
+      --line: #d8dee8;
+      --accent: #128c7e;
+      --accent-2: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    header,
+    main,
+    footer {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    nav {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 14px;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .hero {
+      padding: 56px 0 36px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 32px;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: clamp(38px, 7vw, 76px);
+      line-height: 0.98;
+      margin: 0 0 18px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin: 0 0 14px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 16px;
+      color: var(--muted);
+    }
+
+    .lead {
+      font-size: 20px;
+      max-width: 760px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 26px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+    }
+
+    .button.primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .phone {
+      min-height: 430px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--panel);
+      padding: 28px;
+      display: grid;
+      align-content: center;
+      gap: 18px;
+      box-shadow: 0 18px 60px rgba(17, 24, 39, 0.12);
+    }
+
+    .row {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: color-mix(in srgb, var(--panel) 92%, var(--accent-2));
+    }
+
+    .row strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    section {
+      padding: 34px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    ul {
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .lang {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 28px 0 48px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero,
+      .grid,
+      .lang {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 44px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">WA Schedule</div>
+    <nav aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/alexandrdobryn-afk/WhatsAppScheduler">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1>WA Schedule</h1>
+        <p class="lead">Scheduled WhatsApp messages for Android. Create a local rule, choose a start date and exact time, and send prepared messages to WhatsApp groups from your own phone.</p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/alexandrdobryn-afk/WhatsAppScheduler/releases/latest/download/app-release.apk">Download APK</a>
+          <a class="button" href="https://github.com/alexandrdobryn-afk/WhatsAppScheduler">View source</a>
+        </div>
+      </div>
+      <div class="phone" aria-label="WA Schedule feature preview">
+        <div class="row"><strong>Start date</strong><span>Begin sending from a specific day.</span></div>
+        <div class="row"><strong>Exact times</strong><span>Schedule one or more daily send times.</span></div>
+        <div class="row"><strong>WhatsApp groups</strong><span>Open the official WhatsApp app and send to a configured chat.</span></div>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>Features</h2>
+      <div class="grid">
+        <div class="card">Schedule WhatsApp group messages by weekday, start date, and multiple exact times.</div>
+        <div class="card">Runs locally on Android with Room, AlarmManager, WorkManager, Hilt, and Jetpack Compose.</div>
+        <div class="card">Uses AccessibilityService only for interacting with the official WhatsApp UI.</div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>Install</h2>
+      <ul>
+        <li>Download the signed release APK from GitHub Releases.</li>
+        <li>Allow installation from the browser or file manager you use to open the APK.</li>
+        <li>Open WA Schedule and enable the Accessibility service manually in Android Settings.</li>
+        <li>Use the same signed APK line for updates, so Android preserves app data.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Search phrases</h2>
+      <div class="lang">
+        <div class="card">Schedule WhatsApp messages on Android. Send WhatsApp messages automatically at a specific time.</div>
+        <div class="card">Планировщик WhatsApp для Android. Автоматическая отправка сообщений WhatsApp по расписанию.</div>
+        <div class="card">Планувальник WhatsApp для Android. Автоматичне надсилання повідомлень WhatsApp за розкладом.</div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <h2>FAQ</h2>
+      <p><strong>Does this use WhatsApp Business API?</strong><br>No. It uses the official WhatsApp app already installed on the phone.</p>
+      <p><strong>Can it run without Accessibility?</strong><br>No. Android does not provide a public API for sending personal WhatsApp messages.</p>
+      <p><strong>Is Google Play distribution planned?</strong><br>No. This is intended for private APK distribution because automated Accessibility use can conflict with store policy.</p>
+    </section>
+  </main>
+
+  <footer>
+    WA Schedule is an independent Android project and is not affiliated with WhatsApp or Meta.
+  </footer>
+</body>
+</html>
