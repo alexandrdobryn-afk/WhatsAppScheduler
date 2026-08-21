@@ -218,8 +218,14 @@ class RuleEditorViewModel @Inject constructor(
     }
 
     private suspend fun runAutomationAction(chatName: String, message: String, dryRun: Boolean): AutomationResult {
-        val service = WhatsAppAccessibilityService.instance
-            ?: return AutomationResult.Failure(ErrorCode.ACCESSIBILITY_DISABLED)
+        val service = WhatsAppAccessibilityService.awaitConnected(permissionChecker::isAccessibilityServiceEnabled)
+            ?: return AutomationResult.Failure(
+                if (permissionChecker.isAccessibilityServiceEnabled()) {
+                    ErrorCode.ACCESSIBILITY_NOT_CONNECTED
+                } else {
+                    ErrorCode.ACCESSIBILITY_DISABLED
+                }
+            )
         val whatsAppPackage = permissionChecker.installedWhatsAppPackage()
             ?: return AutomationResult.Failure(ErrorCode.WHATSAPP_NOT_INSTALLED)
         return if (dryRun) {

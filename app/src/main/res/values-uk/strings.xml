@@ -102,6 +102,7 @@
     <string name="settings_reschedule_now">Перепланувати зараз</string>
     <string name="settings_permissions">Дозволи</string>
     <string name="settings_background_usage">Фонове виконання</string>
+    <string name="settings_xiaomi_background_guidance">На Xiaomi/MIUI додатково увімкніть автозапуск і фонову роботу без обмежень для WA Schedule у системних налаштуваннях застосунку.</string>
     <string name="settings_app_permissions">Дозволи застосунку</string>
     <string name="settings_notifications_success">Сповіщати про успішне надсилання</string>
     <string name="settings_diagnostics">Діагностика</string>
@@ -110,9 +111,16 @@
     <string name="diagnostics_title">Діагностика</string>
     <string name="diagnostics_whatsapp_installed">WhatsApp встановлено</string>
     <string name="diagnostics_accessibility">Accessibility</string>
+    <string name="diagnostics_accessibility_permission">Дозвіл Accessibility</string>
+    <string name="diagnostics_accessibility_connection">Підключення Accessibility-сервісу</string>
     <string name="diagnostics_notifications">Сповіщення</string>
     <string name="diagnostics_exact_alarm">Точні будильники</string>
     <string name="diagnostics_battery">Обмеження батареї</string>
+    <string name="diagnostics_process_pid">PID процесу</string>
+    <string name="diagnostics_screen_interactive">Екран активний</string>
+    <string name="diagnostics_keyguard_locked">Екран блокування активний</string>
+    <string name="diagnostics_secure_keyguard_locked">Захищене блокування активне</string>
+    <string name="diagnostics_xiaomi_guidance">Xiaomi/MIUI може зупиняти фонові процеси. Увімкніть автозапуск, зніміть обмеження батареї та дозвольте фонову активність для WA Schedule.</string>
     <string name="diagnostics_scheduler">Планувальник</string>
     <string name="diagnostics_active_rules">Активні правила</string>
     <string name="diagnostics_next_execution">Наступне виконання</string>
@@ -137,6 +145,7 @@
 
     <string name="error_WHATSAPP_NOT_INSTALLED">WhatsApp не встановлено</string>
     <string name="error_ACCESSIBILITY_DISABLED">Службу спеціальних можливостей вимкнено</string>
+    <string name="error_ACCESSIBILITY_NOT_CONNECTED">Дозвіл Accessibility увімкнено, але сервіс ще не підключено</string>
     <string name="error_EXACT_ALARM_DISABLED">Точні будильники заборонені</string>
     <string name="error_DEVICE_LOCKED">Телефон заблоковано</string>
     <string name="error_WHATSAPP_LAUNCH_FAILED">Не вдалося відкрити WhatsApp</string>

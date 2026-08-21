@@ -13,7 +13,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 /** Explicit states per spec section 65 — no single giant onAccessibilityEvent handler. */
 enum class AutomationState {
     IDLE, LAUNCHING_WHATSAPP, FINDING_CHAT, OPENING_CHAT, VERIFYING_CHAT,
-    FINDING_INPUT, SETTING_TEXT, FINDING_SEND_BUTTON, SENDING, VERIFYING, SUCCESS, FAILED
+    FINDING_INPUT, SETTING_TEXT, FINDING_SEND_BUTTON, SENDING, VERIFYING, CLEANUP, SUCCESS, FAILED
 }
 
 data class AutomationTask(val chatName: String, val message: String)
@@ -49,10 +49,13 @@ class AutomationStateMachine(
         private set
 
     suspend fun run(task: AutomationTask): AutomationResult {
+        var shouldCleanup = false
+        try {
         state = AutomationState.LAUNCHING_WHATSAPP
         if (!launchWhatsApp()) {
             return fail(ErrorCode.WHATSAPP_LAUNCH_FAILED)
         }
+        shouldCleanup = true
 
         state = AutomationState.FINDING_CHAT
         val chatOpened = withTimeoutOrNull(Timeouts.FIND_CHAT_MS) { openChatViaSearch(task.chatName) }
@@ -88,6 +91,13 @@ class AutomationStateMachine(
 
         state = AutomationState.SUCCESS
         return AutomationResult.Success
+        } finally {
+            if (shouldCleanup) {
+                val terminalState = state
+                cleanupWhatsApp()
+                state = terminalState
+            }
+        }
     }
 
     /** Dry-run variant: everything up to (but not including) FINDING_SEND_BUTTON's click. */
@@ -155,6 +165,14 @@ class AutomationStateMachine(
             // looking for nodes.
             delay(600L)
         }
+    }
+
+    private suspend fun cleanupWhatsApp() {
+        delay(500L)
+        state = AutomationState.CLEANUP
+        val performed = service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
+        Logger.i(LogComponent.ACCESSIBILITY, "Cleanup HOME performed=$performed")
+        delay(250L)
     }
 
     private enum class ChatOpenResult { OPENED, NOT_FOUND, AMBIGUOUS, UNKNOWN_UI }

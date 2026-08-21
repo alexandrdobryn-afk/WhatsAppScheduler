@@ -8,6 +8,7 @@ package com.example.wascheduler.domain.model
 enum class ErrorCode {
     WHATSAPP_NOT_INSTALLED,
     ACCESSIBILITY_DISABLED,
+    ACCESSIBILITY_NOT_CONNECTED,
     EXACT_ALARM_DISABLED,
     DEVICE_LOCKED,
     WHATSAPP_LAUNCH_FAILED,

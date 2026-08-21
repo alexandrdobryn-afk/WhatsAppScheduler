@@ -4,6 +4,7 @@ import android.app.KeyguardManager
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.PowerManager
 import com.example.wascheduler.core.accessibility.AutomationResult
 import com.example.wascheduler.core.accessibility.AutomationTask
 import com.example.wascheduler.core.accessibility.WhatsAppAccessibilityService
@@ -90,9 +91,17 @@ class AutomationEngine @Inject constructor(
             return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, precheckError)
         }
 
-        val service = WhatsAppAccessibilityService.instance
+        val service = WhatsAppAccessibilityService.awaitConnected(
+            isPermissionEnabled = permissionChecker::isAccessibilityServiceEnabled,
+            timeoutMs = ACCESSIBILITY_BIND_TIMEOUT_MS
+        )
         if (service == null) {
-            return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, ErrorCode.ACCESSIBILITY_DISABLED)
+            val error = if (permissionChecker.isAccessibilityServiceEnabled()) {
+                ErrorCode.ACCESSIBILITY_NOT_CONNECTED
+            } else {
+                ErrorCode.ACCESSIBILITY_DISABLED
+            }
+            return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, error)
         }
 
         val whatsAppPackage = permissionChecker.installedWhatsAppPackage()
@@ -178,7 +187,13 @@ class AutomationEngine @Inject constructor(
      */
     private fun runPrechecks(): ErrorCode? {
         val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-        if (keyguardManager.isKeyguardLocked) return ErrorCode.DEVICE_LOCKED
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val secureKeyguardLocked = keyguardManager.isDeviceSecure && keyguardManager.isDeviceLocked
+        Logger.i(
+            LogComponent.EXECUTION,
+            "Precheck pid=${android.os.Process.myPid()} screenInteractive=${powerManager.isInteractive} keyguardLocked=${keyguardManager.isKeyguardLocked} secureDeviceLocked=$secureKeyguardLocked"
+        )
+        if (secureKeyguardLocked) return ErrorCode.DEVICE_LOCKED
 
         if (!permissionChecker.isWhatsAppInstalled()) return ErrorCode.WHATSAPP_NOT_INSTALLED
         if (!permissionChecker.isAccessibilityServiceEnabled()) return ErrorCode.ACCESSIBILITY_DISABLED
@@ -190,5 +205,9 @@ class AutomationEngine @Inject constructor(
         if (!hasInternet) return ErrorCode.NO_NETWORK
 
         return null
+    }
+
+    companion object {
+        private const val ACCESSIBILITY_BIND_TIMEOUT_MS = 10_000L
     }
 }

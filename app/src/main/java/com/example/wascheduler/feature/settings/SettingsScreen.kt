@@ -1,11 +1,11 @@
 package com.example.wascheduler.feature.settings
 
-import android.app.LocaleManager
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.os.LocaleList
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wascheduler.R
+import com.example.wascheduler.core.locale.AppLocaleController
 import com.example.wascheduler.core.permissions.PermissionChecker
 import com.example.wascheduler.core.permissions.PermissionState
 import com.example.wascheduler.core.scheduler.AlarmScheduler
@@ -84,7 +85,9 @@ class SettingsViewModel @Inject constructor(
 
     init {
         refreshPermissions()
-        clearSystemAppLocale()
+        viewModelScope.launch {
+            AppLocaleController.apply(context, settingsRepository.language.first())
+        }
     }
 
     fun refreshPermissions() {
@@ -94,15 +97,8 @@ class SettingsViewModel @Inject constructor(
     fun setTheme(theme: AppTheme) = viewModelScope.launch { settingsRepository.setTheme(theme) }
 
     fun setLanguage(language: AppLanguage) = viewModelScope.launch {
+        AppLocaleController.apply(context, language)
         settingsRepository.setLanguage(language)
-        clearSystemAppLocale()
-    }
-
-    private fun clearSystemAppLocale() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.getSystemService(LocaleManager::class.java)
-                .applicationLocales = LocaleList.getEmptyLocaleList()
-        }
     }
 
     fun setNotifyOnSuccess(enabled: Boolean) = viewModelScope.launch {
@@ -168,10 +164,22 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(top = 12.dp)
                     )
-                    ChoiceRow(AppLanguage.SYSTEM, language, R.string.settings_language_system, viewModel::setLanguage)
-                    ChoiceRow(AppLanguage.RU, language, R.string.settings_language_ru, viewModel::setLanguage)
-                    ChoiceRow(AppLanguage.UK, language, R.string.settings_language_uk, viewModel::setLanguage)
-                    ChoiceRow(AppLanguage.EN, language, R.string.settings_language_en, viewModel::setLanguage)
+                    ChoiceRow(AppLanguage.SYSTEM, language, R.string.settings_language_system) { selected ->
+                        viewModel.setLanguage(selected)
+                        context.findActivity()?.recreate()
+                    }
+                    ChoiceRow(AppLanguage.RU, language, R.string.settings_language_ru) { selected ->
+                        viewModel.setLanguage(selected)
+                        context.findActivity()?.recreate()
+                    }
+                    ChoiceRow(AppLanguage.UK, language, R.string.settings_language_uk) { selected ->
+                        viewModel.setLanguage(selected)
+                        context.findActivity()?.recreate()
+                    }
+                    ChoiceRow(AppLanguage.EN, language, R.string.settings_language_en) { selected ->
+                        viewModel.setLanguage(selected)
+                        context.findActivity()?.recreate()
+                    }
                 }
             }
 
@@ -293,6 +301,13 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                             Text(stringResource(R.string.settings_app_permissions))
                         }
                     }
+                    if (Build.MANUFACTURER.contains("xiaomi", ignoreCase = true)) {
+                        Text(
+                            stringResource(R.string.settings_xiaomi_background_guidance),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
                 }
             }
 
@@ -366,3 +381,9 @@ private fun zoneOffsetLabel(zoneId: String): String =
         val offset = ZonedDateTime.now(ZoneId.of(zoneId)).offset.id
         "UTC$offset"
     }.getOrDefault("")
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}

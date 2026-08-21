@@ -44,10 +44,22 @@ fun DiagnosticsScreen(viewModel: DiagnosticsViewModel, onBack: () -> Unit) {
         Column(modifier = Modifier.padding(padding).padding(16.dp).fillMaxWidth()) {
             val p = state.permissionState
             DiagRow(stringResource(R.string.diagnostics_whatsapp_installed), p?.whatsAppInstalled)
-            DiagRow(stringResource(R.string.diagnostics_accessibility), p?.accessibilityEnabled)
+            DiagRow(stringResource(R.string.diagnostics_accessibility_permission), p?.accessibilityEnabled)
+            TextRow(stringResource(R.string.diagnostics_accessibility_connection), state.accessibilityConnectionStatus.name)
             DiagRow(stringResource(R.string.diagnostics_notifications), p?.notificationsEnabled)
             DiagRow(stringResource(R.string.diagnostics_exact_alarm), p?.exactAlarmAllowed)
             DiagRow(stringResource(R.string.diagnostics_battery), p?.batteryUnrestricted?.not())
+            TextRow(stringResource(R.string.diagnostics_process_pid), state.processPid.toString())
+            DiagRow(stringResource(R.string.diagnostics_screen_interactive), state.screenInteractive)
+            DiagRow(stringResource(R.string.diagnostics_keyguard_locked), state.keyguardLocked)
+            DiagRow(stringResource(R.string.diagnostics_secure_keyguard_locked), state.secureKeyguardLocked)
+            if (state.isXiaomiDevice) {
+                Text(
+                    stringResource(R.string.diagnostics_xiaomi_guidance),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(R.string.diagnostics_active_rules))
                 Text("${state.activeRuleCount}")
@@ -91,6 +103,14 @@ fun DiagnosticsScreen(viewModel: DiagnosticsViewModel, onBack: () -> Unit) {
             }
             state.exportedReportPath?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         }
+    }
+}
+
+@Composable
+private fun TextRow(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label)
+        Text(value)
     }
 }
 

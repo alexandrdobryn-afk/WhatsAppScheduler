@@ -1,6 +1,7 @@
 package com.example.wascheduler.core.accessibility
 
 import android.accessibilityservice.AccessibilityService
+import android.os.Process
 import android.view.accessibility.AccessibilityEvent
 import com.example.wascheduler.core.logging.LogComponent
 import com.example.wascheduler.core.logging.Logger
@@ -10,8 +11,26 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
+
+enum class AccessibilityConnectionStatus {
+    DISABLED,
+    ENABLED_NOT_CONNECTED,
+    CONNECTED,
+    INTERRUPTED,
+    DESTROYED
+}
+
+data class AccessibilityConnectionSnapshot(
+    val permissionEnabled: Boolean,
+    val status: AccessibilityConnectionStatus,
+    val serviceConnected: Boolean,
+    val processPid: Int,
+    val lastEventTimestamp: Long
+)
 
 /**
  * Accessibility service scoped, both in [android.R.xml] config and in code, to
@@ -35,8 +54,9 @@ class WhatsAppAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        Logger.i(LogComponent.ACCESSIBILITY, "WhatsAppAccessibilityService connected")
+        Logger.i(LogComponent.ACCESSIBILITY, "onServiceConnected pid=${Process.myPid()} timestamp=${System.currentTimeMillis()}")
         instance = this
+        updateStatus(AccessibilityConnectionStatus.CONNECTED)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -49,12 +69,15 @@ class WhatsAppAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        Logger.w(LogComponent.ACCESSIBILITY, "Accessibility service interrupted by the system")
+        updateStatus(AccessibilityConnectionStatus.INTERRUPTED)
+        Logger.w(LogComponent.ACCESSIBILITY, "onInterrupt pid=${Process.myPid()} timestamp=${System.currentTimeMillis()}")
     }
 
     override fun onDestroy() {
         super.onDestroy()
         if (instance === this) instance = null
+        updateStatus(AccessibilityConnectionStatus.DESTROYED)
+        Logger.w(LogComponent.ACCESSIBILITY, "onDestroy pid=${Process.myPid()} timestamp=${System.currentTimeMillis()}")
     }
 
     /** Runs one automation attempt for [task] against [whatsAppPackage] and returns its result. */
@@ -79,7 +102,56 @@ class WhatsAppAccessibilityService : AccessibilityService() {
          * checks this (rather than assuming) before attempting anything, and reports
          * ACCESSIBILITY_DISABLED when it is null — never simulating success.
          */
+        @Volatile
         var instance: WhatsAppAccessibilityService? = null
             private set
+
+        @Volatile
+        private var lastStatus: AccessibilityConnectionStatus = AccessibilityConnectionStatus.ENABLED_NOT_CONNECTED
+
+        @Volatile
+        private var lastEventTimestamp: Long = 0L
+
+        fun snapshot(permissionEnabled: Boolean): AccessibilityConnectionSnapshot {
+            val connected = instance != null
+            val status = when {
+                !permissionEnabled -> AccessibilityConnectionStatus.DISABLED
+                connected && lastStatus != AccessibilityConnectionStatus.INTERRUPTED -> AccessibilityConnectionStatus.CONNECTED
+                connected -> lastStatus
+                lastStatus == AccessibilityConnectionStatus.DESTROYED -> AccessibilityConnectionStatus.DESTROYED
+                else -> AccessibilityConnectionStatus.ENABLED_NOT_CONNECTED
+            }
+            return AccessibilityConnectionSnapshot(
+                permissionEnabled = permissionEnabled,
+                status = status,
+                serviceConnected = connected,
+                processPid = Process.myPid(),
+                lastEventTimestamp = lastEventTimestamp
+            )
+        }
+
+        suspend fun awaitConnected(
+            isPermissionEnabled: () -> Boolean,
+            timeoutMs: Long = 10_000L
+        ): WhatsAppAccessibilityService? {
+            if (!isPermissionEnabled()) {
+                updateStatus(AccessibilityConnectionStatus.DISABLED)
+                return null
+            }
+            instance?.let { return it }
+            updateStatus(AccessibilityConnectionStatus.ENABLED_NOT_CONNECTED)
+            return withTimeoutOrNull(timeoutMs) {
+                while (isPermissionEnabled()) {
+                    instance?.let { return@withTimeoutOrNull it }
+                    delay(200L)
+                }
+                null
+            }
+        }
+
+        private fun updateStatus(status: AccessibilityConnectionStatus) {
+            lastStatus = status
+            lastEventTimestamp = System.currentTimeMillis()
+        }
     }
 }

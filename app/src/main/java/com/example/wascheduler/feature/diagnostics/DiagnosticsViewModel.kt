@@ -1,8 +1,13 @@
 package com.example.wascheduler.feature.diagnostics
 
+import android.app.KeyguardManager
+import android.content.Context
+import android.os.Build
+import android.os.PowerManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wascheduler.core.accessibility.AutomationResult
+import com.example.wascheduler.core.accessibility.AccessibilityConnectionStatus
 import com.example.wascheduler.core.accessibility.WhatsAppAccessibilityService
 import com.example.wascheduler.core.permissions.PermissionChecker
 import com.example.wascheduler.core.permissions.PermissionState
@@ -12,6 +17,7 @@ import com.example.wascheduler.domain.repository.ExecutionRepository
 import com.example.wascheduler.domain.repository.RuleRepository
 import com.example.wascheduler.domain.usecase.ComputeNextOccurrenceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +30,13 @@ import javax.inject.Inject
 
 data class DiagnosticsUiState(
     val permissionState: PermissionState? = null,
+    val accessibilityConnectionStatus: AccessibilityConnectionStatus = AccessibilityConnectionStatus.ENABLED_NOT_CONNECTED,
+    val accessibilityServiceConnected: Boolean = false,
+    val processPid: Int = android.os.Process.myPid(),
+    val screenInteractive: Boolean = true,
+    val keyguardLocked: Boolean = false,
+    val secureKeyguardLocked: Boolean = false,
+    val isXiaomiDevice: Boolean = false,
     val activeRuleCount: Int = 0,
     val nextExecutionLabel: String? = null,
     val scheduleZoneId: ZoneId = ZoneId.systemDefault(),
@@ -37,6 +50,7 @@ data class DiagnosticsUiState(
 
 @HiltViewModel
 class DiagnosticsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val permissionChecker: PermissionChecker,
     private val ruleRepository: RuleRepository,
     private val executionRepository: ExecutionRepository,
@@ -58,9 +72,21 @@ class DiagnosticsViewModel @Inject constructor(
             val scheduleZoneId = scheduleTimeZoneProvider.currentZoneId()
             val next = computeNextOccurrence.forAllRules(rules, scheduleZoneId)
             val recent = executionRepository.observeRecent(1).first().firstOrNull()
+            val permissionState = permissionChecker.currentState()
+            val connectionSnapshot = WhatsAppAccessibilityService.snapshot(permissionState.accessibilityEnabled)
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+            val secureKeyguardLocked = keyguardManager.isDeviceSecure && keyguardManager.isDeviceLocked
             _state.update {
                 it.copy(
-                    permissionState = permissionChecker.currentState(),
+                    permissionState = permissionState,
+                    accessibilityConnectionStatus = connectionSnapshot.status,
+                    accessibilityServiceConnected = connectionSnapshot.serviceConnected,
+                    processPid = connectionSnapshot.processPid,
+                    screenInteractive = powerManager.isInteractive,
+                    keyguardLocked = keyguardManager.isKeyguardLocked,
+                    secureKeyguardLocked = secureKeyguardLocked,
+                    isXiaomiDevice = Build.MANUFACTURER.contains("xiaomi", ignoreCase = true),
                     activeRuleCount = rules.size,
                     nextExecutionLabel = next?.zonedDateTime?.format(DateTimeFormatter.ofPattern("dd.MM HH:mm")),
                     scheduleZoneId = scheduleZoneId,
@@ -81,7 +107,8 @@ class DiagnosticsViewModel @Inject constructor(
             val service = WhatsAppAccessibilityService.instance
             val whatsAppPackage = permissionChecker.installedWhatsAppPackage()
             val resultText = when {
-                service == null -> ErrorCode.ACCESSIBILITY_DISABLED.stringResKey
+                !permissionChecker.isAccessibilityServiceEnabled() -> ErrorCode.ACCESSIBILITY_DISABLED.stringResKey
+                service == null -> ErrorCode.ACCESSIBILITY_NOT_CONNECTED.stringResKey
                 whatsAppPackage == null -> ErrorCode.WHATSAPP_NOT_INSTALLED.stringResKey
                 else -> when (val result = service.runCompatibilityProbe(whatsAppPackage)) {
                     is AutomationResult.Success -> "action_ok"
