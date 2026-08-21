@@ -1,14 +1,12 @@
 package com.example.wascheduler.feature.diagnostics
 
-import android.app.KeyguardManager
-import android.content.Context
 import android.os.Build
-import android.os.PowerManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wascheduler.core.accessibility.AutomationResult
 import com.example.wascheduler.core.accessibility.AccessibilityConnectionStatus
 import com.example.wascheduler.core.accessibility.WhatsAppAccessibilityService
+import com.example.wascheduler.core.device.DeviceWakeController
 import com.example.wascheduler.core.permissions.PermissionChecker
 import com.example.wascheduler.core.permissions.PermissionState
 import com.example.wascheduler.core.scheduler.ScheduleTimeZoneProvider
@@ -17,7 +15,6 @@ import com.example.wascheduler.domain.repository.ExecutionRepository
 import com.example.wascheduler.domain.repository.RuleRepository
 import com.example.wascheduler.domain.usecase.ComputeNextOccurrenceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,9 +30,10 @@ data class DiagnosticsUiState(
     val accessibilityConnectionStatus: AccessibilityConnectionStatus = AccessibilityConnectionStatus.ENABLED_NOT_CONNECTED,
     val accessibilityServiceConnected: Boolean = false,
     val processPid: Int = android.os.Process.myPid(),
-    val screenInteractive: Boolean = true,
-    val keyguardLocked: Boolean = false,
-    val secureKeyguardLocked: Boolean = false,
+    val screenLabel: String = "ON",
+    val keyguardLabel: String = "UNLOCKED",
+    val secureLockLabel: String = "NO",
+    val autoDismissAvailableLabel: String = "NO",
     val isXiaomiDevice: Boolean = false,
     val activeRuleCount: Int = 0,
     val nextExecutionLabel: String? = null,
@@ -50,8 +48,8 @@ data class DiagnosticsUiState(
 
 @HiltViewModel
 class DiagnosticsViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val permissionChecker: PermissionChecker,
+    private val deviceWakeController: DeviceWakeController,
     private val ruleRepository: RuleRepository,
     private val executionRepository: ExecutionRepository,
     private val computeNextOccurrence: ComputeNextOccurrenceUseCase,
@@ -74,18 +72,17 @@ class DiagnosticsViewModel @Inject constructor(
             val recent = executionRepository.observeRecent(1).first().firstOrNull()
             val permissionState = permissionChecker.currentState()
             val connectionSnapshot = WhatsAppAccessibilityService.snapshot(permissionState.accessibilityEnabled)
-            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-            val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-            val secureKeyguardLocked = keyguardManager.isDeviceSecure && keyguardManager.isDeviceLocked
+            val deviceSnapshot = deviceWakeController.snapshot()
             _state.update {
                 it.copy(
                     permissionState = permissionState,
                     accessibilityConnectionStatus = connectionSnapshot.status,
                     accessibilityServiceConnected = connectionSnapshot.serviceConnected,
                     processPid = connectionSnapshot.processPid,
-                    screenInteractive = powerManager.isInteractive,
-                    keyguardLocked = keyguardManager.isKeyguardLocked,
-                    secureKeyguardLocked = secureKeyguardLocked,
+                    screenLabel = deviceSnapshot.screenLabel,
+                    keyguardLabel = deviceSnapshot.keyguardLabel,
+                    secureLockLabel = deviceSnapshot.secureLockLabel,
+                    autoDismissAvailableLabel = deviceSnapshot.autoDismissAvailableLabel,
                     isXiaomiDevice = Build.MANUFACTURER.contains("xiaomi", ignoreCase = true),
                     activeRuleCount = rules.size,
                     nextExecutionLabel = next?.zonedDateTime?.format(DateTimeFormatter.ofPattern("dd.MM HH:mm")),

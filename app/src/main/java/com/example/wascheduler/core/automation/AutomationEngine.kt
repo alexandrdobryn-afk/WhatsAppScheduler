@@ -1,13 +1,12 @@
 package com.example.wascheduler.core.automation
 
-import android.app.KeyguardManager
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.PowerManager
 import com.example.wascheduler.core.accessibility.AutomationResult
 import com.example.wascheduler.core.accessibility.AutomationTask
 import com.example.wascheduler.core.accessibility.WhatsAppAccessibilityService
+import com.example.wascheduler.core.device.DeviceWakeController
 import com.example.wascheduler.core.logging.LogComponent
 import com.example.wascheduler.core.logging.Logger
 import com.example.wascheduler.core.notifications.NotificationHelper
@@ -50,7 +49,8 @@ class AutomationEngine @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val retryPolicy: RetryPolicy,
     private val notificationHelper: NotificationHelper,
-    private val scheduleTimeZoneProvider: ScheduleTimeZoneProvider
+    private val scheduleTimeZoneProvider: ScheduleTimeZoneProvider,
+    private val deviceWakeController: DeviceWakeController
 ) {
 
     suspend fun execute(rule: Rule, scheduledAt: LocalDateTime, attemptNumber: Int = 1): EngineOutcome {
@@ -86,39 +86,48 @@ class AutomationEngine @Inject constructor(
             return EngineOutcome.AlreadyClaimed
         }
 
-        val precheckError = runPrechecks()
-        if (precheckError != null) {
-            return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, precheckError)
-        }
-
-        val service = WhatsAppAccessibilityService.awaitConnected(
-            isPermissionEnabled = permissionChecker::isAccessibilityServiceEnabled,
-            timeoutMs = ACCESSIBILITY_BIND_TIMEOUT_MS
-        )
-        if (service == null) {
-            val error = if (permissionChecker.isAccessibilityServiceEnabled()) {
-                ErrorCode.ACCESSIBILITY_NOT_CONNECTED
-            } else {
-                ErrorCode.ACCESSIBILITY_DISABLED
+        val devicePreparation = deviceWakeController.prepareForScheduledSend()
+        try {
+            if (devicePreparation.errorCode != null) {
+                return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, devicePreparation.errorCode)
             }
-            return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, error)
-        }
 
-        val whatsAppPackage = permissionChecker.installedWhatsAppPackage()
-        if (whatsAppPackage == null) {
-            return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, ErrorCode.WHATSAPP_NOT_INSTALLED)
-        }
+            val precheckError = runPrechecks()
+            if (precheckError != null) {
+                return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, precheckError)
+            }
 
-        val result = service.runAutomation(AutomationTask(rule.chatName, rule.message), whatsAppPackage)
-        return when (result) {
-            is AutomationResult.Success -> {
-                recordTerminal(occurrenceId, rule, scheduledAt, attemptNumber, ExecutionStatus.SENT, null)
-                if (settingsRepository.notifyOnSuccess.first()) {
-                    notificationHelper.notifySent(rule.chatName, scheduledAt.toLocalTime().toString())
+            val service = WhatsAppAccessibilityService.awaitConnected(
+                isPermissionEnabled = permissionChecker::isAccessibilityServiceEnabled,
+                timeoutMs = ACCESSIBILITY_BIND_TIMEOUT_MS
+            )
+            if (service == null) {
+                val error = if (permissionChecker.isAccessibilityServiceEnabled()) {
+                    ErrorCode.ACCESSIBILITY_NOT_CONNECTED
+                } else {
+                    ErrorCode.ACCESSIBILITY_DISABLED
                 }
-                EngineOutcome.Sent
+                return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, error)
             }
-            is AutomationResult.Failure -> finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, result.errorCode)
+
+            val whatsAppPackage = permissionChecker.installedWhatsAppPackage()
+            if (whatsAppPackage == null) {
+                return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, ErrorCode.WHATSAPP_NOT_INSTALLED)
+            }
+
+            val result = service.runAutomation(AutomationTask(rule.chatName, rule.message), whatsAppPackage)
+            return when (result) {
+                is AutomationResult.Success -> {
+                    recordTerminal(occurrenceId, rule, scheduledAt, attemptNumber, ExecutionStatus.SENT, null)
+                    if (settingsRepository.notifyOnSuccess.first()) {
+                        notificationHelper.notifySent(rule.chatName, scheduledAt.toLocalTime().toString())
+                    }
+                    EngineOutcome.Sent
+                }
+                is AutomationResult.Failure -> finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, result.errorCode)
+            }
+        } finally {
+            devicePreparation.session.close()
         }
     }
 
@@ -183,18 +192,10 @@ class AutomationEngine @Inject constructor(
     /**
      * Checks the conditions that must hold before we even try to touch WhatsApp.
      * Returns the first applicable [ErrorCode], or null if all prechecks pass.
-     * Never bypasses a locked device (spec section 42) — only reports it.
+     * Never bypasses a secure locked device (spec section 42) — that is handled
+     * before this method by [DeviceWakeController].
      */
     private fun runPrechecks(): ErrorCode? {
-        val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val secureKeyguardLocked = keyguardManager.isDeviceSecure && keyguardManager.isDeviceLocked
-        Logger.i(
-            LogComponent.EXECUTION,
-            "Precheck pid=${android.os.Process.myPid()} screenInteractive=${powerManager.isInteractive} keyguardLocked=${keyguardManager.isKeyguardLocked} secureDeviceLocked=$secureKeyguardLocked"
-        )
-        if (secureKeyguardLocked) return ErrorCode.DEVICE_LOCKED
-
         if (!permissionChecker.isWhatsAppInstalled()) return ErrorCode.WHATSAPP_NOT_INSTALLED
         if (!permissionChecker.isAccessibilityServiceEnabled()) return ErrorCode.ACCESSIBILITY_DISABLED
 

@@ -50,9 +50,10 @@ fun DiagnosticsScreen(viewModel: DiagnosticsViewModel, onBack: () -> Unit) {
             DiagRow(stringResource(R.string.diagnostics_exact_alarm), p?.exactAlarmAllowed)
             DiagRow(stringResource(R.string.diagnostics_battery), p?.batteryUnrestricted?.not())
             TextRow(stringResource(R.string.diagnostics_process_pid), state.processPid.toString())
-            DiagRow(stringResource(R.string.diagnostics_screen_interactive), state.screenInteractive)
-            DiagRow(stringResource(R.string.diagnostics_keyguard_locked), state.keyguardLocked)
-            DiagRow(stringResource(R.string.diagnostics_secure_keyguard_locked), state.secureKeyguardLocked)
+            TextRow(stringResource(R.string.diagnostics_screen), state.screenLabel)
+            TextRow(stringResource(R.string.diagnostics_keyguard), state.keyguardLabel)
+            TextRow(stringResource(R.string.diagnostics_secure_lock), state.secureLockLabel)
+            TextRow(stringResource(R.string.diagnostics_auto_dismiss_available), state.autoDismissAvailableLabel)
             if (state.isXiaomiDevice) {
                 Text(
                     stringResource(R.string.diagnostics_xiaomi_guidance),

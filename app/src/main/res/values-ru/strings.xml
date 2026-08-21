@@ -116,6 +116,10 @@
     <string name="diagnostics_notifications">Уведомления</string>
     <string name="diagnostics_exact_alarm">Точные будильники</string>
     <string name="diagnostics_battery">Ограничение батареи</string>
+    <string name="diagnostics_screen">Экран</string>
+    <string name="diagnostics_keyguard">Экран блокировки</string>
+    <string name="diagnostics_secure_lock">Защищённая блокировка</string>
+    <string name="diagnostics_auto_dismiss_available">Автоснятие блокировки доступно</string>
     <string name="diagnostics_process_pid">PID процесса</string>
     <string name="diagnostics_screen_interactive">Экран активен</string>
     <string name="diagnostics_keyguard_locked">Экран блокировки активен</string>
@@ -148,6 +152,7 @@
     <string name="error_ACCESSIBILITY_NOT_CONNECTED">Разрешение Accessibility включено, но сервис ещё не подключён</string>
     <string name="error_EXACT_ALARM_DISABLED">Точные будильники запрещены</string>
     <string name="error_DEVICE_LOCKED">Телефон заблокирован</string>
+    <string name="error_DEVICE_SECURE_LOCKED">Телефон заблокирован PIN, паролем или графическим ключом</string>
     <string name="error_WHATSAPP_LAUNCH_FAILED">Не удалось открыть WhatsApp</string>
     <string name="error_CHAT_NOT_FOUND">Группа не найдена</string>
     <string name="error_AMBIGUOUS_CHAT">Найдено несколько групп с таким названием</string>

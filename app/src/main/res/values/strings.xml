@@ -116,6 +116,10 @@
     <string name="diagnostics_notifications">Notifications</string>
     <string name="diagnostics_exact_alarm">Exact alarms</string>
     <string name="diagnostics_battery">Battery restriction</string>
+    <string name="diagnostics_screen">Screen</string>
+    <string name="diagnostics_keyguard">Keyguard</string>
+    <string name="diagnostics_secure_lock">Secure lock</string>
+    <string name="diagnostics_auto_dismiss_available">Auto dismiss available</string>
     <string name="diagnostics_process_pid">Process PID</string>
     <string name="diagnostics_screen_interactive">Screen interactive</string>
     <string name="diagnostics_keyguard_locked">Keyguard locked</string>
@@ -148,6 +152,7 @@
     <string name="error_ACCESSIBILITY_NOT_CONNECTED">Accessibility permission is enabled, but the service is not connected yet</string>
     <string name="error_EXACT_ALARM_DISABLED">Exact alarms are not permitted</string>
     <string name="error_DEVICE_LOCKED">Device is locked</string>
+    <string name="error_DEVICE_SECURE_LOCKED">Device is locked with secure PIN, password, or pattern</string>
     <string name="error_WHATSAPP_LAUNCH_FAILED">Could not open WhatsApp</string>
     <string name="error_CHAT_NOT_FOUND">Group not found</string>
     <string name="error_AMBIGUOUS_CHAT">Multiple groups with this name were found</string>

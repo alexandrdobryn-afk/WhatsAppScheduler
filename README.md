@@ -36,9 +36,9 @@ Build verification in this repository:
 |---|---|
 | `:app:assembleDebug` | Passed |
 | `:app:assembleRelease` | Passed |
-| `:app:testDebugUnitTest` | 29 passed, 0 failed, 0 skipped |
-| `:app:lintDebug` | Passed, 0 errors, 53 warnings |
-| `:app:lintRelease` | Passed, 0 errors, 53 warnings |
+| `:app:testDebugUnitTest` | 32 passed, 0 failed, 0 skipped |
+| `:app:lintDebug` | Passed, 0 errors, 57 warnings |
+| `:app:lintRelease` | Passed, 0 errors, 57 warnings |
 | Release APK signature | Verified with `apksigner` |
 
 ## Screenshots
@@ -76,7 +76,7 @@ set is:
 Current APK SHA-256:
 
 ```text
-2FD9B044632B16538DEE30134E8668E87D7B259D6D01EA0DD3EC85CE4F037DDD
+5850C52636680AA520DC13AE78AD3E24E9915634FAEDCA2C285BE15C8A0A9C9E
 ```
 
 Do not use `app-debug.apk` for normal installation. Use the signed release APK.

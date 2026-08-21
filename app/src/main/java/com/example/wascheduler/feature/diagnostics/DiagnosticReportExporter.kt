@@ -1,11 +1,10 @@
 package com.example.wascheduler.feature.diagnostics
 
-import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
-import android.os.PowerManager
 import com.example.wascheduler.BuildConfig
 import com.example.wascheduler.core.accessibility.WhatsAppAccessibilityService
+import com.example.wascheduler.core.device.DeviceWakeController
 import com.example.wascheduler.core.permissions.PermissionState
 import com.example.wascheduler.core.permissions.WhatsAppPackages
 import com.example.wascheduler.domain.model.Execution
@@ -24,7 +23,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class DiagnosticReportExporter @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val deviceWakeController: DeviceWakeController
 ) {
     fun export(permissionState: PermissionState, rules: List<Rule>, recentExecutions: List<Execution>): String {
         val whatsAppVersion = WhatsAppPackages.ALL.firstNotNullOfOrNull { pkg ->
@@ -33,9 +33,7 @@ class DiagnosticReportExporter @Inject constructor(
 
         val sb = StringBuilder()
         val connectionSnapshot = WhatsAppAccessibilityService.snapshot(permissionState.accessibilityEnabled)
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-        val secureKeyguardLocked = keyguardManager.isDeviceSecure && keyguardManager.isDeviceLocked
+        val deviceSnapshot = deviceWakeController.snapshot()
 
         sb.appendLine("WA Schedule diagnostic report")
         sb.appendLine("App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
@@ -52,9 +50,10 @@ class DiagnosticReportExporter @Inject constructor(
         sb.appendLine("  Notifications enabled: ${permissionState.notificationsEnabled}")
         sb.appendLine("  Exact alarm allowed: ${permissionState.exactAlarmAllowed}")
         sb.appendLine("  Battery unrestricted: ${permissionState.batteryUnrestricted}")
-        sb.appendLine("  Screen interactive: ${powerManager.isInteractive}")
-        sb.appendLine("  Keyguard locked: ${keyguardManager.isKeyguardLocked}")
-        sb.appendLine("  Secure keyguard locked: $secureKeyguardLocked")
+        sb.appendLine("  Screen: ${deviceSnapshot.screenLabel}")
+        sb.appendLine("  Keyguard: ${deviceSnapshot.keyguardLabel}")
+        sb.appendLine("  Secure lock: ${deviceSnapshot.secureLockLabel}")
+        sb.appendLine("  Auto dismiss available: ${deviceSnapshot.autoDismissAvailableLabel}")
         sb.appendLine()
         sb.appendLine("Rules count: ${rules.size}")
         sb.appendLine()

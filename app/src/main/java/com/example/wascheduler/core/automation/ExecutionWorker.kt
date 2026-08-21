@@ -1,7 +1,6 @@
 package com.example.wascheduler.core.automation
 
 import android.content.Context
-import android.os.PowerManager
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -41,38 +40,30 @@ class ExecutionWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         Logger.i(LogComponent.EXECUTION, "ExecutionWorker started")
-        val powerManager = applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WaScheduler:ExecutionWorker")
-        wakeLock.acquire(WAKE_LOCK_TIMEOUT_MS)
-        try {
-            val rules = ruleRepository.getAllEnabledRules()
-            val scheduleZoneId = scheduleTimeZoneProvider.currentZoneId()
-            val due = collectDueOccurrences.collect(rules, scheduleZoneId)
+        val rules = ruleRepository.getAllEnabledRules()
+        val scheduleZoneId = scheduleTimeZoneProvider.currentZoneId()
+        val due = collectDueOccurrences.collect(rules, scheduleZoneId)
 
-            val unclaimedDue = due.filterNot { occurrence ->
-                executionRepository.hasTerminalOrRunning(
-                    OccurrenceId(occurrence.rule.id, occurrence.scheduledAt).toString()
-                )
-            }
-
-            unclaimedDue.forEachIndexed { index, occurrence ->
-                if (index > 0) delay(SEQUENTIAL_SPACING_MS)
-                val outcome = automationEngine.execute(occurrence.rule, occurrence.scheduledAt, attemptNumber = 1)
-                if (outcome is EngineOutcome.Failed && outcome.willRetry) {
-                    retryScheduler.scheduleRetry(occurrence.rule.id, occurrence.scheduledAt, nextAttempt = 2)
-                }
-            }
-
-            alarmScheduler.rescheduleNext()
-            return Result.success()
-        } finally {
-            if (wakeLock.isHeld) wakeLock.release()
+        val unclaimedDue = due.filterNot { occurrence ->
+            executionRepository.hasTerminalOrRunning(
+                OccurrenceId(occurrence.rule.id, occurrence.scheduledAt).toString()
+            )
         }
+
+        unclaimedDue.forEachIndexed { index, occurrence ->
+            if (index > 0) delay(SEQUENTIAL_SPACING_MS)
+            val outcome = automationEngine.execute(occurrence.rule, occurrence.scheduledAt, attemptNumber = 1)
+            if (outcome is EngineOutcome.Failed && outcome.willRetry) {
+                retryScheduler.scheduleRetry(occurrence.rule.id, occurrence.scheduledAt, nextAttempt = 2)
+            }
+        }
+
+        alarmScheduler.rescheduleNext()
+        return Result.success()
     }
 
     companion object {
         const val UNIQUE_WORK_NAME = "execution_worker"
         private const val SEQUENTIAL_SPACING_MS = 1_500L
-        private const val WAKE_LOCK_TIMEOUT_MS = 2 * 60 * 1000L
     }
 }
