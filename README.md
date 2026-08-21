@@ -1,192 +1,187 @@
 # WA Schedule
 
-**Scheduled WhatsApp Messages for Android.** WA Schedule is a local Android app
-for scheduling WhatsApp group messages from a personal phone: choose a chat,
-message text, start date, weekdays, and exact times, then the app opens the
-official WhatsApp app and sends at the configured time.
+**Schedule WhatsApp messages automatically on Android using your personal WhatsApp account.**
 
-Download the latest signed APK from
-[direct GitHub download](https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk).
+WA Schedule is an open-source Android WhatsApp scheduler for personal accounts.
+Set a chat or group, message text, weekdays, start date, and exact send times.
+The app runs locally on your phone and uses Android AccessibilityService to
+interact with the official WhatsApp application.
 
-Keywords: WhatsApp scheduler Android, scheduled WhatsApp messages, automatic
-WhatsApp group messages, Android WhatsApp scheduled sender, personal WhatsApp
-automation, Kotlin, Jetpack Compose, AccessibilityService.
+**No WhatsApp Business API · No server · No root · Local-first**
 
-Локальный Android-планировщик, который от имени владельца устройства
-автоматически выполняет заранее заданное действие — ввод и отправку
-заготовленного текста — в уже установленном официальном WhatsApp, по
-расписанию. Никакого backend, никакого WhatsApp Business API, никакого root.
+[Download latest APK](https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk)
 
-## Что делает приложение
-
-- Пользователь создаёт правило: название WhatsApp-группы, текст сообщения,
-  список времён (например 08:00, 09:00, 10:00) и дни недели.
-- В заданное время приложение открывает WhatsApp, находит нужную группу,
-  проверяет, что открыт именно тот чат, вводит текст и нажимает «Отправить».
-- Отправителем всегда является текущий WhatsApp-аккаунт владельца телефона.
-
-## Архитектура
-
-```
-UI (Compose) → ViewModel → Domain (use cases) → Repository → Room
-                                                     ↓
-                                    Scheduler (AlarmManager, DB = source of truth)
-                                                     ↓
-                                        AutomationEngine (prechecks, dedup, retry)
-                                                     ↓
-                                  WhatsAppAccessibilityService → WhatsAppUiAdapter
-```
-
-Ключевые модули:
-
-- `core/scheduler` — `AlarmScheduler`: точные будильники (`AlarmManager`),
-  БД всегда источник истины, будильник пересчитывается заново при любом
-  сомнении (перезагрузка, смена времени, изменение правила).
-- `core/automation` — `AutomationEngine` (весь пайплайн: precheck → claim →
-  запуск → результат → лог → уведомление), `ExecutionWorker`/`RetryWorker`
-  (гарантированное фоновое выполнение через WorkManager), `RetryPolicy`.
-- `core/accessibility` — `WhatsAppAccessibilityService` (жёстко ограничен
-  пакетами `com.whatsapp`/`com.whatsapp.w4b`), `AutomationStateMachine`
-  (явный конечный автомат: LAUNCHING → FINDING_CHAT → VERIFYING_CHAT →
-  FINDING_INPUT → SETTING_TEXT → FINDING_SEND_BUTTON → SENDING → VERIFYING →
-  SUCCESS/FAILED), `WhatsAppUiAdapter` — единственное место, где живут все
-  WhatsApp-специфичные селекторы.
-- `data/` — Room (`rules`, `rule_times`, `execution_logs`) + DataStore
-  (глобальный переключатель, тема, настройки уведомлений).
-- `feature/` — Home, History, Rule Editor, Settings, Diagnostics, Onboarding.
-
-## Требования
-
-- Android 12 (API 31) и новее. Собрано и рассчитано на тестирование вплоть
-  до Android 16 (реальное тестирование на устройствах — см. «Тесты» ниже,
-  средой сборки автоматический прогон на физических Android-версиях не
-  выполнялся, см. «Известные ограничения»).
-- Установленный официальный WhatsApp (обычный личный аккаунт).
-
-## Разрешения
-
-| Разрешение | Зачем |
-|---|---|
-| Accessibility Service | Единственный способ программно взаимодействовать с UI стороннего приложения (WhatsApp) без API — обязателен для отправки |
-| Уведомления | Отчёт об успехе/ошибке отправки |
-| Exact alarms (`SCHEDULE_EXACT_ALARM`) | Точное время срабатывания, а не «примерно», как у WorkManager |
-| Игнорирование battery optimization | Рекомендуется, но не обязательно — без него агрессивные OEM-прошивки (Xiaomi, Samsung и др.) могут убивать фоновые задачи |
-
-Экран онбординга при первом запуске показывает **реальный** статус каждого
-разрешения и никогда не выдаёт «всё готово», если что-то не разрешено.
-
-## Как установить
-
-1. Для постоянного использования собрать или скачать подписанный release APK
-   (см. `RELEASE.md`). `app-debug.apk` использовать только для разработки.
-2. `adb install -r app-release.apk` либо установить вручную на устройстве.
-3. Открыть приложение — появится экран разрешений.
-
-Для GitHub-дистрибуции текущий подписанный APK опубликован как
-[`download/app-release.apk`](https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk).
-Keystore, `keystore.properties` и пароли нельзя публиковать в репозитории.
-
-SHA-256 текущего APK:
+Current Android package name:
 
 ```text
-E4BA2567266D090DE38E054B8927DA750756F267E96412821693DE251EECC118
+io.github.alexandrdobryn.waschedule
 ```
 
-## Как настроить Accessibility
+## Test Status
 
-1. На экране онбординга (или Настройки → Диагностика) нажать «Открыть
-   настройки» напротив пункта Accessibility.
-2. В системных настройках Android найти «WA Schedule - автоматизация»
-   и включить.
-3. Вернуться в приложение — статус обновится автоматически при возврате.
+Tested on:
 
-## Как создать правило
+| Area | Status |
+|---|---|
+| Android Emulator | Pixel 8, Android 15 / API 35 reported as tested |
+| APK installation | Passed |
+| Accessibility onboarding | Passed |
+| WhatsApp installation and login | Passed |
+| Rule editor | Under active testing |
+| Scheduled end-to-end send | Experimental / not yet fully validated |
 
-1. Главная → «+ Добавить расписание».
-2. Указать название WhatsApp-группы **точно как в WhatsApp** (приложение
-   ищет чат через встроенный поиск WhatsApp по названию — см. «Известные
-   ограничения» про надёжность этого механизма).
-3. Ввести текст сообщения (до 4000 символов).
-4. Добавить одно или несколько времён и дни недели.
-5. Задать допустимое опоздание (по умолчанию 10 минут) — если телефон не
-   успел выполнить действие в это окно, occurrence помечается `SKIPPED /
-   MISSED_WINDOW`, а не отправляется с опозданием.
-6. Сохранить.
+Build verification in this repository:
 
-## Как выполнить Dry Run
+| Check | Status |
+|---|---|
+| `:app:assembleDebug` | Passed |
+| `:app:assembleRelease` | Passed |
+| `:app:testDebugUnitTest` | 29 passed, 0 failed, 0 skipped |
+| `:app:lintDebug` | Passed, 0 issues |
+| `:app:lintRelease` | Passed, 0 issues |
+| Release APK signature | Verified with `apksigner` |
 
-В редакторе правила — «Проверить без отправки». Приложение пройдёт весь путь
-(открыть WhatsApp → найти группу → открыть чат → проверить заголовок → найти
-поле ввода → найти кнопку отправки) и **остановится перед нажатием Send**,
-показав, какой шаг не удался, если не удался.
+## Screenshots
 
-## Как выполнить Test Send
+Product screenshots are being collected for the public README. The intended
+set is:
 
-В редакторе правила — «Тестовая отправка». Это единственное место, где перед
-реальной отправкой запрашивается явное подтверждение с превью группы и
-текста.
+| Home | Schedule | History | Settings |
+|---|---|---|---|
+| Coming soon | Coming soon | Coming soon | Coming soon |
 
-## Известные ограничения
+## Features
 
-- **Официального API нет.** Обычный личный WhatsApp не предоставляет
-  программного способа отправки сообщений. Всё построено на
-  `AccessibilityService`, то есть на автоматизации пользовательского
-  интерфейса официального приложения.
-- **Нет гарантии доставки.** Приложение фиксирует только то, что команда
-  отправки была выполнена в интерфейсе WhatsApp (`SENT`), а не то, что
-  сообщение доставлено, прочитано или получено сервером. Это принципиальное
-  архитектурное ограничение, а не недоработка.
-- **Хрупкость к обновлениям WhatsApp.** WhatsApp не публикует стабильный
-  контракт для внешних инструментов; `resource-id`, `contentDescription` и
-  структура экрана могут измениться в любом обновлении. Весь WhatsApp-
-  специфичный код изолирован в `WhatsAppUiAdapterImpl` и снабжён
-  семантическими fallback'ами (className/editable/clickable), но при
-  достаточно крупном изменении интерфейса потребуется обновление адаптера.
-  Диагностика → «Проверить WhatsApp» позволяет обнаружить это заранее, без
-  отправки сообщений.
-- **Ограничения производителей (OEM).** Xiaomi/Samsung/Huawei/OnePlus/Oppo/
-  Realme и другие могут агрессивно ограничивать фоновую работу поверх
-  стандартного Android Doze/App Standby. Приложение не пытается это
-  обходить — только показывает статус в Диагностике и просит пользователя
-  вручную снять ограничение в системных настройках.
-- **Заблокированный экран.** Если Android не позволяет выполнить действие
-  при заблокированном устройстве, приложение НЕ пытается разблокировать
-  телефон — фиксирует `DEVICE_LOCKED` и повторяет попытку в пределах
-  допустимого опоздания.
-- **Соответствие условиям использования WhatsApp.** Автоматизация
-  интерфейса стороннего приложения, даже без обхода защит и без массовой
-  рассылки, может противоречить пользовательскому соглашению WhatsApp
-  (запрет на неавторизованную автоматическую отправку сообщений). Это
-  ответственность пользователя приложения, а не техническое ограничение —
-  явно фиксируется здесь по требованию прозрачности.
-- **Дублирование названий групп.** Если в WhatsApp есть две группы с
-  одинаковым названием, приложение не отправляет сообщение ни в одну из них
-  и помечает occurrence как `AMBIGUOUS_CHAT`, требуя ручного вмешательства.
-- **Debug-экран состояния** (`app/src/debug/.../DebugStateScreen.kt`)
-  реализован, но не подключён к навигационному графу (чтобы не тянуть
-  debug-only зависимости в release source set через общий Gradle-модуль);
-  для использования его нужно вручную подключить к своему debug-flavour'у
-  или отдельному debug-only NavHost.
-- **Реальное end-to-end тестирование с живым WhatsApp** (спецификация,
-  раздел 87-88) в этой среде разработки не проводилось: здесь нет
-  Android-эмулятора/устройства и нет доступа в интернет для скачивания
-  Android SDK/эмулятора. Написаны модульные тесты (`app/src/test`) для
-  чистой доменной логики (Scheduler, дедупликация ID, RetryPolicy) и
-  инструментальный тест (`app/src/androidTest`) для `ExecutionDao.tryClaim`
-  (dedup/race). Перед реальным использованием обязательно нужно прогнать
-  ручные сценарии из раздела 87 ТЗ на физическом устройстве.
+- Schedule WhatsApp messages for personal WhatsApp accounts.
+- Send to a configured WhatsApp chat or group.
+- Choose a start date, weekdays, and one or more exact send times.
+- Run locally on Android with no backend server.
+- Uses Android `AccessibilityService` to operate the official WhatsApp UI.
+- Stores only user-created rules and execution history in a local Room database.
+- Supports English, Ukrainian, and Russian interface text.
+- Includes diagnostics for WhatsApp, Accessibility, notifications, exact alarms,
+  battery restrictions, scheduler time zone, and last execution status.
 
-## Структура репозитория
+## Install
 
+1. Open the APK link on the Android phone:
+   [download/app-release.apk](https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk).
+2. Android will ask whether to allow installing unknown apps from the browser or
+   file manager you used. Allow it for that source.
+3. Install WA Schedule.
+4. Open the app and complete onboarding.
+5. Go to Android Settings -> Accessibility -> Installed apps and enable
+   `WA Schedule - automation`.
+
+Current APK SHA-256:
+
+```text
+E87A8DF60E1D83FF63AA84337BCEE09C6CEB4860F7436B9A8CC3133A4DF04875
 ```
-app/src/main/java/com/example/wascheduler/
-  core/        scheduler, accessibility, automation, permissions, logging, notifications
-  data/        database, dao, entity, repository
-  domain/      model, repository, usecase
-  feature/     home, rule_editor, history, settings, diagnostics, onboarding
-  service/     AlarmReceiver, BootReceiver, TimeChangeReceiver
-  di/          Hilt-модули
-app/src/test/          модульные тесты
-app/src/androidTest/    инструментальные тесты
-app/src/debug/          debug-only экран
+
+Do not use `app-debug.apk` for normal installation. Use the signed release APK.
+Future updates must be signed with the same private keystore.
+
+## Permissions
+
+| Permission | Why it is needed |
+|---|---|
+| Accessibility Service | Required to interact with the official WhatsApp UI because personal WhatsApp has no public send-message API |
+| Notifications | Shows send success/failure status |
+| Exact alarms (`SCHEDULE_EXACT_ALARM`, `USE_EXACT_ALARM`) | Runs schedules at configured exact times |
+| Boot completed | Restores scheduled alarms after reboot or app update |
+| Wake lock / foreground service | Helps complete scheduled work reliably |
+| Battery optimization exemption | Optional but recommended on aggressive OEM Android builds |
+
+The app does not request `INTERNET`.
+
+## Privacy And Security
+
+- No server.
+- No WhatsApp Business API.
+- No root.
+- No telemetry.
+- No `INTERNET` permission.
+- The Accessibility service is restricted to `com.whatsapp` and `com.whatsapp.w4b`.
+- The app does not store other people's WhatsApp messages.
+- Release builds use R8, resource shrinking, and a local signing key.
+- Internal receivers and services are not exported unless Android requires it.
+
+## Usage
+
+1. Open WA Schedule.
+2. Tap Add schedule.
+3. Enter the WhatsApp chat or group name exactly as it appears in WhatsApp.
+4. Enter the message text.
+5. Select the start date.
+6. Add one or more send times.
+7. Select weekdays.
+8. Save the rule.
+
+For manual validation, use Dry Run before sending. Dry Run opens WhatsApp,
+searches the chat, verifies the input field and send button, then stops before
+tapping Send.
+
+## Limitations
+
+- Personal WhatsApp has no official public API for scheduled sending. WA Schedule
+  uses Android Accessibility automation, so WhatsApp UI changes can require app
+  updates.
+- The app can confirm that it tapped Send in the WhatsApp UI, but it cannot
+  guarantee server delivery, recipient receipt, or read status.
+- If multiple chats have the same name, the app treats the target as ambiguous
+  and does not send.
+- Locked devices and aggressive OEM background restrictions can prevent scheduled
+  work from running.
+- Automated WhatsApp UI use may conflict with WhatsApp terms or app-store
+  policies. Use responsibly for personal/local automation.
+- Google Play distribution is not the current target because automated
+  Accessibility use can conflict with store policy.
+
+## Search Terms
+
+WA Schedule can also be described as:
+
+- WhatsApp message scheduler for Android
+- Schedule WhatsApp messages
+- Automatic WhatsApp group messages
+- WhatsApp scheduled sender
+- WhatsApp automation for personal account
+- Android WhatsApp scheduler
+- Scheduled WhatsApp group messages
+- Personal WhatsApp scheduling app
+- Android scheduled message sender
+
+## Русский
+
+WA Schedule — локальный Android-планировщик для автоматической отправки заранее
+подготовленных сообщений в WhatsApp от имени владельца телефона.
+
+Приложение не использует сервер, WhatsApp Business API или root. Оно хранит
+только созданные пользователем правила и использует Android AccessibilityService
+для взаимодействия с официальным приложением WhatsApp.
+
+## For Developers
+
+- Android Gradle Plugin: 8.5.2
+- Kotlin: 1.9.24
+- JDK: 17
+- minSdk: 31
+- targetSdk / compileSdk: 35
+- UI: Jetpack Compose
+- DI: Hilt
+- Storage: Room + DataStore
+- Scheduling: AlarmManager + WorkManager
+
+Build:
+
+```powershell
+.\gradlew.bat :app:assembleDebug
+.\gradlew.bat :app:assembleRelease
+.\gradlew.bat :app:testDebugUnitTest
+.\gradlew.bat :app:lintDebug
+.\gradlew.bat :app:lintRelease
 ```
+
+Architecture details are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Private release signing details are in [RELEASE.md](RELEASE.md).

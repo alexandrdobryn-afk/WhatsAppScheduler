@@ -9,7 +9,7 @@ https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/down
 SHA-256:
 
 ```text
-E4BA2567266D090DE38E054B8927DA750756F267E96412821693DE251EECC118
+E87A8DF60E1D83FF63AA84337BCEE09C6CEB4860F7436B9A8CC3133A4DF04875
 ```
 
 Install on Android by opening the APK on the phone and allowing installation from that source when Android asks.

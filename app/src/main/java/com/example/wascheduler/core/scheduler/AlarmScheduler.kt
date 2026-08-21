@@ -94,6 +94,6 @@ class AlarmScheduler @Inject constructor(
     companion object {
         private const val REQUEST_CODE = 1001
         private const val IMMEDIATE_TRIGGER_DELAY_MS = 1_000L
-        const val ACTION_SCHEDULED_TASK = "com.example.wascheduler.action.SCHEDULED_TASK"
+        const val ACTION_SCHEDULED_TASK = "io.github.alexandrdobryn.waschedule.action.SCHEDULED_TASK"
     }
 }
