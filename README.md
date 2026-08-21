@@ -6,7 +6,7 @@ message text, start date, weekdays, and exact times, then the app opens the
 official WhatsApp app and sends at the configured time.
 
 Download the latest signed APK from
-[GitHub Releases](https://github.com/alexandrdobryn-afk/WhatsAppScheduler/releases/latest/download/app-release.apk).
+[direct GitHub download](https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk).
 
 Keywords: WhatsApp scheduler Android, scheduled WhatsApp messages, automatic
 WhatsApp group messages, Android WhatsApp scheduled sender, personal WhatsApp
@@ -82,9 +82,15 @@ UI (Compose) → ViewModel → Domain (use cases) → Repository → Room
 2. `adb install -r app-release.apk` либо установить вручную на устройстве.
 3. Открыть приложение — появится экран разрешений.
 
-Для GitHub-дистрибуции загружайте именно
-`app/build/outputs/apk/release/app-release.apk` в GitHub Release. Keystore,
-`keystore.properties` и пароли нельзя публиковать в репозитории.
+Для GitHub-дистрибуции текущий подписанный APK опубликован как
+[`download/app-release.apk`](https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk).
+Keystore, `keystore.properties` и пароли нельзя публиковать в репозитории.
+
+SHA-256 текущего APK:
+
+```text
+E4BA2567266D090DE38E054B8927DA750756F267E96412821693DE251EECC118
+```
 
 ## Как настроить Accessibility
 

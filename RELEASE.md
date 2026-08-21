@@ -1,6 +1,6 @@
 # Private release
 
-This app uses AccessibilityService for local WhatsApp UI automation. Do not publish it to Google Play unless the policy question is resolved separately. For personal/private use, distribute a signed release APK through a private GitHub Release, private cloud link, USB, or another trusted channel.
+This app uses AccessibilityService for local WhatsApp UI automation. Do not publish it to Google Play unless the policy question is resolved separately. For personal/private use, distribute a signed release APK through a GitHub Release, direct repository download, private cloud link, USB, or another trusted channel.
 
 ## Signing files
 
@@ -57,8 +57,12 @@ app\build\outputs\apk\release\app-release.apk
 
 1. Keep the repository public or private as desired, but never commit `.release/` or `keystore.properties`.
 2. Build `app-release.apk`.
-3. Create a GitHub Release.
-4. Upload `app\build\outputs\apk\release\app-release.apk` as a release asset.
-5. Install the APK on the phone from the release asset URL.
+3. Copy the signed APK to `download/app-release.apk` if GitHub Releases are not available.
+4. Commit and push `download/app-release.apk`.
+5. Install the APK on the phone from:
+
+```text
+https://raw.githubusercontent.com/alexandrdobryn-afk/WhatsAppScheduler/main/download/app-release.apk
+```
 
 Before releasing an update, bump `versionCode` in `app/build.gradle.kts` and sign with the same keystore. Android will then allow installing the new APK over the old one while preserving Room data.

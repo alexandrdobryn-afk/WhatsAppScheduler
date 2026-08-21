@@ -15,6 +15,7 @@ keystore.properties
 *.keystore
 *.p12
 *.apk
+!download/*.apk
 *.aab
 .idea/
 .DS_Store
