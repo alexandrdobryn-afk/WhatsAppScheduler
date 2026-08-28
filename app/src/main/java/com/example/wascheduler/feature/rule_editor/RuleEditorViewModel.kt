@@ -12,6 +12,7 @@ import com.example.wascheduler.domain.model.DayOfWeekPresets
 import com.example.wascheduler.domain.model.ErrorCode
 import com.example.wascheduler.domain.model.Rule
 import com.example.wascheduler.domain.model.RuleTime
+import com.example.wascheduler.domain.model.ScheduleType
 import com.example.wascheduler.domain.repository.RuleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,7 @@ enum class RuleEditorValidationError {
     MESSAGE_REQUIRED,
     TIME_REQUIRED,
     DAY_REQUIRED,
+    DATE_REQUIRED,
     SAVE_FAILED
 }
 
@@ -38,7 +40,8 @@ fun validateRuleEditorState(state: RuleEditorState): List<RuleEditorValidationEr
     if (state.chatName.isBlank()) add(RuleEditorValidationError.CHAT_REQUIRED)
     if (state.message.isBlank()) add(RuleEditorValidationError.MESSAGE_REQUIRED)
     if (state.times.isEmpty()) add(RuleEditorValidationError.TIME_REQUIRED)
-    if (state.days.isEmpty()) add(RuleEditorValidationError.DAY_REQUIRED)
+    if (state.scheduleType == ScheduleType.WEEKLY && state.days.isEmpty()) add(RuleEditorValidationError.DAY_REQUIRED)
+    if (state.scheduleType != ScheduleType.WEEKLY && state.dates.isEmpty()) add(RuleEditorValidationError.DATE_REQUIRED)
 }
 
 data class RuleEditorState(
@@ -46,7 +49,9 @@ data class RuleEditorState(
     val name: String = "",
     val chatName: String = "",
     val message: String = "",
+    val scheduleType: ScheduleType = ScheduleType.WEEKLY,
     val startDate: LocalDate = LocalDate.now(),
+    val dates: List<LocalDate> = listOf(LocalDate.now()),
     val times: List<LocalTime> = emptyList(),
     val days: Set<DayOfWeek> = DayOfWeekPresets.EVERY_DAY,
     val allowedDelayMinutes: Int = 10,
@@ -86,7 +91,9 @@ class RuleEditorViewModel @Inject constructor(
                         name = rule.name,
                         chatName = rule.chatName,
                         message = rule.message,
+                        scheduleType = rule.scheduleType,
                         startDate = rule.startDate,
+                        dates = rule.dates.ifEmpty { listOf(rule.startDate) },
                         times = rule.times.map { it.localTime }.sorted(),
                         days = rule.times.firstOrNull()?.days ?: DayOfWeekPresets.EVERY_DAY,
                         allowedDelayMinutes = rule.allowedDelayMinutes,
@@ -106,6 +113,18 @@ class RuleEditorViewModel @Inject constructor(
     fun updateChatName(value: String) = _state.update { markDirty(it).copy(chatName = value) }
     fun updateMessage(value: String) = _state.update { markDirty(it).copy(message = value.take(MAX_MESSAGE_LENGTH)) }
     fun updateStartDate(value: LocalDate) = _state.update { markDirty(it).copy(startDate = value) }
+    fun updateScheduleType(value: ScheduleType) = _state.update {
+        val dirty = markDirty(it)
+        dirty.copy(
+            scheduleType = value,
+            dates = if (value == ScheduleType.WEEKLY) dirty.dates else dirty.dates.ifEmpty { listOf(LocalDate.now()) }
+        )
+    }
+    fun addDate(value: LocalDate) = _state.update { markDirty(it).copy(dates = (it.dates + value).distinct().sorted()) }
+    fun removeDate(value: LocalDate) = _state.update {
+        val remaining = (it.dates - value).distinct().sorted()
+        markDirty(it).copy(dates = remaining)
+    }
     fun updateAllowedDelay(minutes: Int) = _state.update { markDirty(it).copy(allowedDelayMinutes = minutes.coerceIn(0, 24 * 60)) }
     fun updateEnabled(enabled: Boolean) = _state.update { markDirty(it).copy(enabled = enabled) }
 
@@ -165,9 +184,17 @@ class RuleEditorViewModel @Inject constructor(
                     chatName = s.chatName.trim(),
                     message = s.message,
                     enabled = s.enabled,
-                    startDate = s.startDate,
+                    scheduleType = s.scheduleType,
+                    startDate = s.effectiveStartDate(),
+                    dates = s.persistedDates(),
                     allowedDelayMinutes = s.allowedDelayMinutes,
-                    times = s.times.map { time -> RuleTime(ruleId = s.ruleId, localTime = time, days = s.days) }
+                    times = s.times.map { time ->
+                        RuleTime(
+                            ruleId = s.ruleId,
+                            localTime = time,
+                            days = if (s.scheduleType == ScheduleType.WEEKLY) s.days else emptySet()
+                        )
+                    }
                 )
                 val persistedRuleId = ruleRepository.upsertRule(rule)
                 val persistedRule = ruleRepository.getRule(persistedRuleId)
@@ -235,3 +262,17 @@ class RuleEditorViewModel @Inject constructor(
         }
     }
 }
+
+private fun RuleEditorState.persistedDates(): List<LocalDate> =
+    when (scheduleType) {
+        ScheduleType.WEEKLY -> emptyList()
+        ScheduleType.SPECIFIC_DATE -> dates.distinct().sorted().take(1)
+        ScheduleType.MULTIPLE_DATES -> dates.distinct().sorted()
+    }
+
+private fun RuleEditorState.effectiveStartDate(): LocalDate =
+    when (scheduleType) {
+        ScheduleType.WEEKLY -> startDate
+        ScheduleType.SPECIFIC_DATE,
+        ScheduleType.MULTIPLE_DATES -> persistedDates().minOrNull() ?: startDate
+    }

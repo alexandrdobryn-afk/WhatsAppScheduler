@@ -18,11 +18,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
@@ -30,6 +32,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -81,6 +86,7 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onContinue: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val state by viewModel.state.collectAsState()
+    var showAccessibilityDisclosure by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.refresh() }
     DisposableEffectOnResume(lifecycleOwner) { viewModel.refresh() }
@@ -119,7 +125,7 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onContinue: () -> Unit) {
                     granted = state?.accessibilityEnabled,
                     required = true,
                     actionLabel = stringResource(R.string.onboarding_open_settings),
-                    onAction = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+                    onAction = { showAccessibilityDisclosure = true }
                 )
             }
             item {
@@ -127,7 +133,7 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onContinue: () -> Unit) {
                     title = stringResource(R.string.onboarding_step_notifications_title),
                     description = stringResource(R.string.onboarding_notifications_description),
                     granted = state?.notificationsEnabled,
-                    required = true,
+                    required = false,
                     actionLabel = stringResource(R.string.onboarding_allow),
                     onAction = {
                         val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
@@ -165,6 +171,29 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onContinue: () -> Unit) {
                 )
             }
         }
+    }
+
+    if (showAccessibilityDisclosure) {
+        AlertDialog(
+            onDismissRequest = { showAccessibilityDisclosure = false },
+            title = { Text(stringResource(R.string.accessibility_disclosure_title)) },
+            text = { Text(stringResource(R.string.accessibility_disclosure_body)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showAccessibilityDisclosure = false
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    }
+                ) {
+                    Text(stringResource(R.string.accessibility_disclosure_continue))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAccessibilityDisclosure = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            }
+        )
     }
 }
 
@@ -219,7 +248,7 @@ private fun OnboardingStep(
                 Spacer(Modifier.height(12.dp))
                 OutlinedButton(
                     onClick = onAction,
-                    modifier = Modifier.align(Alignment.End)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(actionLabel)
                 }

@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -75,6 +77,7 @@ class SettingsViewModel @Inject constructor(
     val theme: Flow<AppTheme> = settingsRepository.theme
     val language: Flow<AppLanguage> = settingsRepository.language
     val notifyOnSuccess: Flow<Boolean> = settingsRepository.notifyOnSuccess
+    val globalAutomationEnabled: Flow<Boolean> = settingsRepository.globalAutomationEnabled
     val maxRetryAttempts: Flow<Int> = settingsRepository.maxRetryAttempts
     val timeZoneMode: Flow<ScheduleTimeZoneMode> = settingsRepository.scheduleTimeZoneMode
     val customTimeZoneId: Flow<String> = settingsRepository.customTimeZoneId
@@ -105,6 +108,11 @@ class SettingsViewModel @Inject constructor(
         settingsRepository.setNotifyOnSuccess(enabled)
     }
 
+    fun setGlobalAutomationEnabled(enabled: Boolean) = viewModelScope.launch {
+        settingsRepository.setGlobalAutomationEnabled(enabled)
+        if (enabled) alarmScheduler.rescheduleNext() else alarmScheduler.cancel()
+    }
+
     fun setRetryAttempts(count: Int) = viewModelScope.launch {
         settingsRepository.setMaxRetryAttempts(count)
     }
@@ -131,6 +139,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
     val context = LocalContext.current
     val theme by viewModel.theme.collectAsState(initial = AppTheme.SYSTEM)
     val language by viewModel.language.collectAsState(initial = AppLanguage.SYSTEM)
+    val globalAutomationEnabled by viewModel.globalAutomationEnabled.collectAsState(initial = true)
     val notifyOnSuccess by viewModel.notifyOnSuccess.collectAsState(initial = true)
     val maxRetryAttempts by viewModel.maxRetryAttempts.collectAsState(initial = 3)
     val timeZoneMode by viewModel.timeZoneMode.collectAsState(initial = ScheduleTimeZoneMode.DEVICE)
@@ -138,6 +147,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
     val scheduleZoneId by viewModel.scheduleZoneId.collectAsState(initial = ZoneId.systemDefault())
     val permissionState by viewModel.permissionState.collectAsState()
     var zoneQuery by remember { mutableStateOf(customTimeZoneId) }
+    var showAccessibilityDisclosure by remember { mutableStateOf(false) }
 
     LaunchedEffect(customTimeZoneId) {
         zoneQuery = customTimeZoneId
@@ -240,6 +250,13 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Text(stringResource(R.string.home_global_switch), modifier = Modifier.weight(1f))
+                        Switch(checked = globalAutomationEnabled, onCheckedChange = viewModel::setGlobalAutomationEnabled)
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(stringResource(R.string.settings_notifications_success), modifier = Modifier.weight(1f))
                         Switch(checked = notifyOnSuccess, onCheckedChange = viewModel::setNotifyOnSuccess)
                     }
@@ -278,7 +295,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                     PermissionRow(stringResource(R.string.diagnostics_exact_alarm), permissionState?.exactAlarmAllowed)
                     PermissionRow(stringResource(R.string.settings_background_usage), permissionState?.batteryUnrestricted)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }) {
+                        OutlinedButton(onClick = { showAccessibilityDisclosure = true }) {
                             Text(stringResource(R.string.onboarding_step_accessibility_title))
                         }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -322,6 +339,29 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                 }
             }
         }
+    }
+
+    if (showAccessibilityDisclosure) {
+        AlertDialog(
+            onDismissRequest = { showAccessibilityDisclosure = false },
+            title = { Text(stringResource(R.string.accessibility_disclosure_title)) },
+            text = { Text(stringResource(R.string.accessibility_disclosure_body)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showAccessibilityDisclosure = false
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    }
+                ) {
+                    Text(stringResource(R.string.accessibility_disclosure_continue))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAccessibilityDisclosure = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            }
+        )
     }
 }
 

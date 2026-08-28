@@ -34,12 +34,30 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .build()
 
     private val MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL("ALTER TABLE rules ADD COLUMN startDate TEXT NOT NULL DEFAULT '1970-01-01'")
+        }
+    }
+
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE rules ADD COLUMN scheduleType TEXT NOT NULL DEFAULT 'WEEKLY'")
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `rule_dates` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `ruleId` INTEGER NOT NULL,
+                    `localDate` TEXT NOT NULL,
+                    FOREIGN KEY(`ruleId`) REFERENCES `rules`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                )
+                """.trimIndent()
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_rule_dates_ruleId` ON `rule_dates` (`ruleId`)")
+            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_rule_dates_ruleId_localDate` ON `rule_dates` (`ruleId`, `localDate`)")
         }
     }
 

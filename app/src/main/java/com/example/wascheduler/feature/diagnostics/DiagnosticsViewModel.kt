@@ -1,5 +1,6 @@
 package com.example.wascheduler.feature.diagnostics
 
+import android.content.Context
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +16,7 @@ import com.example.wascheduler.domain.repository.ExecutionRepository
 import com.example.wascheduler.domain.repository.RuleRepository
 import com.example.wascheduler.domain.usecase.ComputeNextOccurrenceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,6 +28,10 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 data class DiagnosticsUiState(
+    val appVersion: String = "unavailable",
+    val androidVersion: String = "unavailable",
+    val manufacturer: String = "unavailable",
+    val whatsAppVersion: String = "unavailable",
     val permissionState: PermissionState? = null,
     val accessibilityConnectionStatus: AccessibilityConnectionStatus = AccessibilityConnectionStatus.ENABLED_NOT_CONNECTED,
     val accessibilityServiceConnected: Boolean = false,
@@ -48,6 +54,7 @@ data class DiagnosticsUiState(
 
 @HiltViewModel
 class DiagnosticsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val permissionChecker: PermissionChecker,
     private val deviceWakeController: DeviceWakeController,
     private val ruleRepository: RuleRepository,
@@ -75,6 +82,10 @@ class DiagnosticsViewModel @Inject constructor(
             val deviceSnapshot = deviceWakeController.snapshot()
             _state.update {
                 it.copy(
+                    appVersion = packageVersion(context.packageName),
+                    androidVersion = "${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT}",
+                    manufacturer = Build.MANUFACTURER.ifBlank { "unavailable" },
+                    whatsAppVersion = permissionChecker.installedWhatsAppPackage()?.let(::packageVersion) ?: "unavailable",
                     permissionState = permissionState,
                     accessibilityConnectionStatus = connectionSnapshot.status,
                     accessibilityServiceConnected = connectionSnapshot.serviceConnected,
@@ -96,6 +107,12 @@ class DiagnosticsViewModel @Inject constructor(
             }
         }
     }
+
+    private fun packageVersion(packageName: String): String =
+        runCatching {
+            val info = context.packageManager.getPackageInfo(packageName, 0)
+            info.versionName ?: "unavailable"
+        }.getOrDefault("unavailable")
 
     /** Runs the same node-discovery pipeline as Dry Run, without a specific target chat — just landmark checks. */
     fun checkWhatsAppCompatibility() {

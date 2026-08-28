@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.example.wascheduler.data.entity.RuleEntity
+import com.example.wascheduler.data.entity.RuleDateEntity
 import com.example.wascheduler.data.entity.RuleTimeEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -24,6 +25,9 @@ interface RuleDao {
 
     @Query("SELECT * FROM rule_times WHERE ruleId = :ruleId")
     suspend fun timesForRule(ruleId: Long): List<RuleTimeEntity>
+
+    @Query("SELECT * FROM rule_dates WHERE ruleId = :ruleId ORDER BY localDate")
+    suspend fun datesForRule(ruleId: Long): List<RuleDateEntity>
 
     @Query("SELECT * FROM rule_times")
     suspend fun allTimes(): List<RuleTimeEntity>
@@ -55,6 +59,12 @@ interface RuleDao {
     @Query("DELETE FROM rule_times WHERE ruleId = :ruleId")
     suspend fun deleteTimesForRule(ruleId: Long)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDates(dates: List<RuleDateEntity>): List<Long>
+
+    @Query("DELETE FROM rule_dates WHERE ruleId = :ruleId")
+    suspend fun deleteDatesForRule(ruleId: Long)
+
     @Delete
     suspend fun deleteTime(time: RuleTimeEntity)
 
@@ -66,17 +76,29 @@ interface RuleDao {
     }
 
     @Transaction
-    suspend fun upsertRuleWithTimes(rule: RuleEntity, times: List<RuleTimeEntity>): Long {
+    suspend fun replaceRuleDates(ruleId: Long, dates: List<RuleDateEntity>) {
+        deleteDatesForRule(ruleId)
+        if (dates.isNotEmpty()) insertDates(dates)
+    }
+
+    @Transaction
+    suspend fun upsertRuleWithSchedule(
+        rule: RuleEntity,
+        times: List<RuleTimeEntity>,
+        dates: List<RuleDateEntity>
+    ): Long {
         val ruleId = if (rule.id == 0L) insertRule(rule) else {
             updateRule(rule)
             rule.id
         }
         replaceRuleTimes(ruleId, times.map { it.copy(ruleId = ruleId) })
+        replaceRuleDates(ruleId, dates.map { it.copy(ruleId = ruleId) })
         return ruleId
     }
 
     @Transaction
-    suspend fun deleteRuleWithTimes(ruleId: Long) {
+    suspend fun deleteRuleWithSchedule(ruleId: Long) {
+        deleteDatesForRule(ruleId)
         deleteTimesForRule(ruleId)
         deleteRule(ruleId)
     }

@@ -43,6 +43,10 @@ fun DiagnosticsScreen(viewModel: DiagnosticsViewModel, onBack: () -> Unit) {
     ) { padding ->
         Column(modifier = Modifier.padding(padding).padding(16.dp).fillMaxWidth()) {
             val p = state.permissionState
+            TextRow(stringResource(R.string.diagnostics_app_version), state.appVersion)
+            TextRow(stringResource(R.string.diagnostics_android_version), state.androidVersion)
+            TextRow(stringResource(R.string.diagnostics_manufacturer), state.manufacturer)
+            TextRow(stringResource(R.string.diagnostics_whatsapp_version), state.whatsAppVersion)
             DiagRow(stringResource(R.string.diagnostics_whatsapp_installed), p?.whatsAppInstalled)
             DiagRow(stringResource(R.string.diagnostics_accessibility_permission), p?.accessibilityEnabled)
             TextRow(stringResource(R.string.diagnostics_accessibility_connection), state.accessibilityConnectionStatus.name)

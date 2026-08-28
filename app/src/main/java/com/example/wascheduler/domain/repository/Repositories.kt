@@ -12,6 +12,7 @@ interface RuleRepository {
     suspend fun getAllEnabledRules(): List<Rule>
     /** Returns the persisted rule id (existing id when updating, new id on insert). */
     suspend fun upsertRule(rule: Rule): Long
+    suspend fun duplicateRule(ruleId: Long): Long
     suspend fun setRuleEnabled(ruleId: Long, enabled: Boolean)
     suspend fun deleteRule(ruleId: Long)
 }

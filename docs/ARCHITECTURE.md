@@ -3,6 +3,11 @@
 WA Schedule is a local Android app built with Kotlin, Jetpack Compose, Room,
 Hilt, AlarmManager, WorkManager, and Android AccessibilityService.
 
+Product-release requirements are tracked in
+[PRODUCT_RELEASE_SPEC.md](PRODUCT_RELEASE_SPEC.md). Architecture changes that
+touch scheduling, Accessibility, privacy, release, or Google Play readiness
+must preserve that specification unless a later task explicitly supersedes it.
+
 ```text
 UI (Compose) -> ViewModel -> Domain use cases -> Repository -> Room
                                                      |

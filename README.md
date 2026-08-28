@@ -3,7 +3,8 @@
 **Schedule WhatsApp messages automatically on Android using your personal WhatsApp account.**
 
 WA Schedule is an open-source Android WhatsApp scheduler for personal accounts.
-Set a chat or group, message text, weekdays, start date, and exact send times.
+Set a chat or group, message text, weekly days or concrete dates, and exact
+send times.
 The app runs locally on your phone and uses Android AccessibilityService to
 interact with the official WhatsApp application.
 
@@ -36,7 +37,7 @@ Build verification in this repository:
 |---|---|
 | `:app:assembleDebug` | Passed |
 | `:app:assembleRelease` | Passed |
-| `:app:testDebugUnitTest` | 32 passed, 0 failed, 0 skipped |
+| `:app:testDebugUnitTest` | 41 passed, 0 failed, 0 skipped |
 | `:app:lintDebug` | Passed, 0 errors, 57 warnings |
 | `:app:lintRelease` | Passed, 0 errors, 57 warnings |
 | Release APK signature | Verified with `apksigner` |
@@ -54,7 +55,8 @@ set is:
 
 - Schedule WhatsApp messages for personal WhatsApp accounts.
 - Send to a configured WhatsApp chat or group.
-- Choose a start date, weekdays, and one or more exact send times.
+- Choose weekly days, one specific date, or multiple dates with one or more
+  exact send times.
 - Run locally on Android with no backend server.
 - Uses Android `AccessibilityService` to operate the official WhatsApp UI.
 - Stores only user-created rules and execution history in a local Room database.
@@ -184,4 +186,7 @@ Build:
 ```
 
 Architecture details are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The product-release checklist is in
+[docs/PRODUCT_RELEASE_SPEC.md](docs/PRODUCT_RELEASE_SPEC.md).
+Privacy details are in [PRIVACY.md](PRIVACY.md).
 Private release signing details are in [RELEASE.md](RELEASE.md).

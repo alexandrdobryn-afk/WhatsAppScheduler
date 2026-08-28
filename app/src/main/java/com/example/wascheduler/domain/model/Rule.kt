@@ -4,11 +4,16 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
+enum class ScheduleType {
+    WEEKLY,
+    SPECIFIC_DATE,
+    MULTIPLE_DATES
+}
+
 /**
- * A single scheduled-send rule: one target group, one message, one or more
- * times, one set of active weekdays. Multiple different messages/times require
- * multiple rules (spec section 15) — this type deliberately does not support
- * per-time messages.
+ * A single scheduled-send rule: one target chat/group, one message, one or more
+ * times, and either weekly days or concrete calendar dates. Multiple different
+ * messages still require multiple rules.
  */
 data class Rule(
     val id: Long = 0,
@@ -16,7 +21,9 @@ data class Rule(
     val chatName: String,
     val message: String,
     val enabled: Boolean = true,
+    val scheduleType: ScheduleType = ScheduleType.WEEKLY,
     val startDate: LocalDate = LocalDate.now(),
+    val dates: List<LocalDate> = emptyList(),
     val allowedDelayMinutes: Int = 10,
     val times: List<RuleTime> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
@@ -44,4 +51,5 @@ object DayOfWeekPresets {
         DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
         DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
     )
+    val WEEKENDS: Set<DayOfWeek> = setOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
 }

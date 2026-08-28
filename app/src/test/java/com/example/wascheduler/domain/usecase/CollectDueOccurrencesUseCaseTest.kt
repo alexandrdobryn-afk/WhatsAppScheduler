@@ -2,6 +2,7 @@ package com.example.wascheduler.domain.usecase
 
 import com.example.wascheduler.domain.model.Rule
 import com.example.wascheduler.domain.model.RuleTime
+import com.example.wascheduler.domain.model.ScheduleType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -69,6 +70,50 @@ class CollectDueOccurrencesUseCaseTest {
     fun `occurrence before rule start date is not due`() {
         val now = ZonedDateTime.of(2026, 3, 10, 9, 5, 0, 0, zone)
         val rule = rule(LocalTime.of(9, 0), delay = 10).copy(startDate = LocalDate.of(2026, 3, 11))
+
+        val due = useCase.collect(listOf(rule), zone, now)
+
+        assertTrue(due.isEmpty())
+    }
+
+    @Test
+    fun `specific date occurrence is due inside allowed delay`() {
+        val date = LocalDate.of(2026, 8, 25)
+        val now = ZonedDateTime.of(2026, 8, 25, 14, 35, 0, 0, zone)
+        val rule = Rule(
+            id = 1,
+            name = "r",
+            chatName = "c",
+            message = "m",
+            enabled = true,
+            scheduleType = ScheduleType.SPECIFIC_DATE,
+            startDate = date,
+            dates = listOf(date),
+            allowedDelayMinutes = 10,
+            times = listOf(RuleTime(ruleId = 1, localTime = LocalTime.of(14, 30), days = emptySet()))
+        )
+
+        val due = useCase.collect(listOf(rule), zone, now)
+
+        assertEquals(1, due.size)
+        assertEquals(date.atTime(14, 30), due.first().scheduledAt)
+    }
+
+    @Test
+    fun `multiple dates occurrence is ignored on dates not selected`() {
+        val now = ZonedDateTime.of(2026, 8, 26, 14, 35, 0, 0, zone)
+        val rule = Rule(
+            id = 1,
+            name = "r",
+            chatName = "c",
+            message = "m",
+            enabled = true,
+            scheduleType = ScheduleType.MULTIPLE_DATES,
+            startDate = LocalDate.of(2026, 8, 25),
+            dates = listOf(LocalDate.of(2026, 8, 25), LocalDate.of(2026, 8, 28)),
+            allowedDelayMinutes = 10,
+            times = listOf(RuleTime(ruleId = 1, localTime = LocalTime.of(14, 30), days = emptySet()))
+        )
 
         val due = useCase.collect(listOf(rule), zone, now)
 

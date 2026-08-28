@@ -18,6 +18,7 @@
     <string name="home_system_needs_setup">Setup required</string>
     <string name="rule_days_every_day">Every day</string>
     <string name="rule_days_weekdays">Mon-Fri</string>
+    <string name="rule_days_weekends">Weekends</string>
     <string name="rule_start_date">Starts</string>
 
     <string name="rule_editor_title_new">New schedule</string>
@@ -25,7 +26,11 @@
     <string name="rule_editor_name">Rule name</string>
     <string name="rule_editor_group">WhatsApp group</string>
     <string name="rule_editor_message">Message</string>
+    <string name="rule_editor_schedule_type">Schedule type</string>
     <string name="rule_editor_start_date">Start date</string>
+    <string name="rule_editor_date">Date</string>
+    <string name="rule_editor_dates">Dates</string>
+    <string name="rule_editor_add_date">Add date</string>
     <string name="rule_editor_times">Times</string>
     <string name="rule_editor_add_time">Add time</string>
     <string name="rule_editor_repeat">Repeat</string>
@@ -35,6 +40,10 @@
     <string name="rule_editor_test_send">Test send</string>
     <string name="rule_editor_preset_every_day">Every day</string>
     <string name="rule_editor_preset_weekdays">Mon-Fri</string>
+    <string name="rule_editor_preset_weekends">Weekends</string>
+    <string name="schedule_type_weekly">Weekly</string>
+    <string name="schedule_type_specific_date">Specific date</string>
+    <string name="schedule_type_multiple_dates">Multiple dates</string>
     <string name="day_monday_short">Mon</string>
     <string name="day_tuesday_short">Tue</string>
     <string name="day_wednesday_short">Wed</string>
@@ -55,6 +64,9 @@
     <string name="action_send_test">Send test</string>
     <string name="action_delete">Delete</string>
     <string name="action_edit">Edit</string>
+    <string name="action_enable">Enable</string>
+    <string name="action_disable">Disable</string>
+    <string name="action_duplicate">Duplicate</string>
     <string name="action_more">More options</string>
     <string name="action_discard">Discard</string>
     <string name="action_back">Back</string>
@@ -65,10 +77,23 @@
     <string name="validation_message_required">Enter a message.</string>
     <string name="validation_time_required">Select at least one time.</string>
     <string name="validation_day_required">Select at least one day.</string>
+    <string name="validation_date_required">Select at least one date.</string>
     <string name="validation_save_failed">Failed to save schedule.</string>
     <string name="dry_run_ready">WhatsApp opened ✓\nChat found ✓\nChat verified ✓\nInput found ✓\nSend button found ✓\n\nReady</string>
 
     <string name="history_title">History</string>
+    <string name="history_filter_all">All</string>
+    <string name="history_filter_sent">Sent</string>
+    <string name="history_filter_failed">Failed</string>
+    <string name="history_filter_skipped">Skipped</string>
+    <string name="history_details_title">Execution details</string>
+    <string name="history_scheduled">Scheduled</string>
+    <string name="history_started">Started</string>
+    <string name="history_finished">Finished</string>
+    <string name="history_target">Target</string>
+    <string name="history_status">Status</string>
+    <string name="history_attempt">Attempt</string>
+    <string name="history_error">Error</string>
     <string name="status_scheduled">Scheduled</string>
     <string name="status_running">Running</string>
     <string name="status_sent">Sent</string>
@@ -113,6 +138,10 @@
     <string name="settings_export_report">Export diagnostic report</string>
 
     <string name="diagnostics_title">Diagnostics</string>
+    <string name="diagnostics_app_version">App version</string>
+    <string name="diagnostics_android_version">Android</string>
+    <string name="diagnostics_manufacturer">Manufacturer</string>
+    <string name="diagnostics_whatsapp_version">WhatsApp version</string>
     <string name="diagnostics_whatsapp_installed">WhatsApp installed</string>
     <string name="diagnostics_accessibility">Accessibility</string>
     <string name="diagnostics_accessibility_permission">Accessibility permission</string>
@@ -154,6 +183,9 @@
     <string name="onboarding_notifications_description">Shows send results and errors.</string>
     <string name="onboarding_exact_alarm_description">Required to run schedules at the exact selected time.</string>
     <string name="onboarding_battery_description">Recommended so Android battery limits do not stop background sends.</string>
+    <string name="accessibility_disclosure_title">Accessibility use</string>
+    <string name="accessibility_disclosure_body">WA Schedule uses Android Accessibility Service only to perform the actions you configure: open the official WhatsApp app, find the chat or group you specified, enter your prepared message, and press Send at the scheduled time.\n\nWA Schedule does not read or store your conversations.</string>
+    <string name="accessibility_disclosure_continue">I understand and continue</string>
 
     <string name="notification_channel_result">Send result</string>
     <string name="notification_sent_title">Message sent</string>

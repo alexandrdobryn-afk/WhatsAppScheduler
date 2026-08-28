@@ -2,7 +2,9 @@ package com.example.wascheduler.domain.usecase
 
 import com.example.wascheduler.domain.model.Rule
 import com.example.wascheduler.domain.model.RuleTime
+import com.example.wascheduler.domain.model.ScheduleType
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import javax.inject.Inject
@@ -36,16 +38,30 @@ class ComputeNextOccurrenceUseCase @Inject constructor() {
         rules.mapNotNull { forRule(it, zoneId, now) }.minByOrNull { it.zonedDateTime }
 
     private fun nextFor(rule: Rule, time: RuleTime, zoneId: ZoneId, now: ZonedDateTime): ZonedDateTime? {
-        if (time.days.isEmpty()) return null
         val searchStartDate = maxOf(now.toLocalDate(), rule.startDate)
-        // Search the next 8 days (today + one full week) for the first day whose
-        // weekday is enabled and whose time-of-day is still in the future.
-        for (dayOffset in 0..7) {
-            val candidateDate = searchStartDate.plusDays(dayOffset.toLong())
-            if (candidateDate.dayOfWeek !in time.days) continue
+        for (candidateDate in candidateDates(rule, time, searchStartDate)) {
             val candidate = ZonedDateTime.of(candidateDate, time.localTime, zoneId)
             if (candidate.isAfter(now)) return candidate
         }
         return null
     }
+
+    private fun candidateDates(rule: Rule, time: RuleTime, searchStartDate: LocalDate): Sequence<LocalDate> =
+        when (rule.scheduleType) {
+            ScheduleType.WEEKLY -> {
+                if (time.days.isEmpty()) {
+                    emptySequence()
+                } else {
+                    (0..7).asSequence()
+                        .map { searchStartDate.plusDays(it.toLong()) }
+                        .filter { it.dayOfWeek in time.days }
+                }
+            }
+            ScheduleType.SPECIFIC_DATE,
+            ScheduleType.MULTIPLE_DATES -> rule.dates
+                .asSequence()
+                .distinct()
+                .sorted()
+                .filter { !it.isBefore(searchStartDate) }
+        }
 }

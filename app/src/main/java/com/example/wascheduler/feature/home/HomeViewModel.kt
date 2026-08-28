@@ -85,4 +85,14 @@ class HomeViewModel @Inject constructor(
             alarmScheduler.rescheduleNext()
         }
     }
+
+    fun duplicateRule(ruleId: Long, onDuplicated: (Long) -> Unit) {
+        viewModelScope.launch {
+            val newRuleId = ruleRepository.duplicateRule(ruleId)
+            if (newRuleId > 0) {
+                alarmScheduler.rescheduleNext()
+                onDuplicated(newRuleId)
+            }
+        }
+    }
 }

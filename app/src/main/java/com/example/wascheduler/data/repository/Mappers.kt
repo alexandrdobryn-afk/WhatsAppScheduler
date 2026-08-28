@@ -1,22 +1,26 @@
 package com.example.wascheduler.data.repository
 
 import com.example.wascheduler.data.entity.ExecutionEntity
+import com.example.wascheduler.data.entity.RuleDateEntity
 import com.example.wascheduler.data.entity.RuleEntity
 import com.example.wascheduler.data.entity.RuleTimeEntity
 import com.example.wascheduler.domain.model.ErrorCode
 import com.example.wascheduler.domain.model.Execution
 import com.example.wascheduler.domain.model.ExecutionStatus
 import com.example.wascheduler.domain.model.Rule
+import com.example.wascheduler.domain.model.ScheduleType
 import com.example.wascheduler.domain.model.RuleTime
 import java.time.DayOfWeek
 
-fun RuleEntity.toDomain(times: List<RuleTimeEntity>): Rule = Rule(
+fun RuleEntity.toDomain(times: List<RuleTimeEntity>, dates: List<RuleDateEntity>): Rule = Rule(
     id = id,
     name = name,
     chatName = chatName,
     message = message,
     enabled = enabled,
+    scheduleType = runCatching { ScheduleType.valueOf(scheduleType) }.getOrDefault(ScheduleType.WEEKLY),
     startDate = startDate,
+    dates = dates.map { it.localDate }.distinct().sorted(),
     allowedDelayMinutes = allowedDelayMinutes,
     times = times.map { it.toDomain() },
     createdAt = createdAt,
@@ -29,6 +33,7 @@ fun Rule.toEntity(): RuleEntity = RuleEntity(
     chatName = chatName,
     message = message,
     enabled = enabled,
+    scheduleType = scheduleType.name,
     startDate = startDate,
     allowedDelayMinutes = allowedDelayMinutes,
     createdAt = createdAt,
@@ -50,6 +55,7 @@ fun RuleTimeEntity.toDomain(): RuleTime = RuleTime(
     },
     enabled = enabled
 )
+
 
 fun RuleTime.toEntity(): RuleTimeEntity = RuleTimeEntity(
     id = id,

@@ -1,5 +1,6 @@
 package com.example.wascheduler.core.automation
 
+import com.example.wascheduler.domain.model.ErrorCode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -35,5 +36,17 @@ class RetryPolicyTest {
         val policy = RetryPolicy(maxAttemptsProvider = { 1 })
         assertFalse(policy.hasMoreAttempts(1))
         assertNull(policy.delayBeforeAttempt(2))
+    }
+
+    @Test
+    fun `only temporary errors are recoverable`() {
+        val policy = RetryPolicy()
+
+        assertTrue(policy.isRecoverable(ErrorCode.DEVICE_LOCKED))
+        assertTrue(policy.isRecoverable(ErrorCode.ACCESSIBILITY_NOT_CONNECTED))
+        assertTrue(policy.isRecoverable(ErrorCode.NO_NETWORK))
+        assertFalse(policy.isRecoverable(ErrorCode.CHAT_NOT_FOUND))
+        assertFalse(policy.isRecoverable(ErrorCode.AMBIGUOUS_CHAT))
+        assertFalse(policy.isRecoverable(ErrorCode.WRONG_CHAT))
     }
 }

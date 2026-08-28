@@ -54,7 +54,9 @@ import androidx.compose.ui.unit.dp
 import com.example.wascheduler.R
 import com.example.wascheduler.core.accessibility.AutomationResult
 import com.example.wascheduler.domain.model.DayOfWeekPresets
+import com.example.wascheduler.domain.model.ScheduleType
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -181,22 +183,27 @@ fun RuleEditorScreen(viewModel: RuleEditorViewModel, onDone: () -> Unit) {
             }
 
             item {
-                Text(stringResource(R.string.rule_editor_start_date), style = MaterialTheme.typography.labelLarge)
-                OutlinedButton(
-                    onClick = {
-                        DatePickerDialog(
-                            context,
-                            { _, year, month, dayOfMonth ->
-                                viewModel.updateStartDate(java.time.LocalDate.of(year, month + 1, dayOfMonth))
-                            },
-                            state.startDate.year,
-                            state.startDate.monthValue - 1,
-                            state.startDate.dayOfMonth
-                        ).show()
-                    },
+                Text(stringResource(R.string.rule_editor_schedule_type), style = MaterialTheme.typography.labelLarge)
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(state.startDate.format(startDateFormatter))
+                    ScheduleType.entries.forEach { type ->
+                        FilterChip(
+                            selected = state.scheduleType == type,
+                            onClick = { viewModel.updateScheduleType(type) },
+                            label = { Text(stringResource(type.labelRes)) }
+                        )
+                    }
+                }
+            }
+
+            item {
+                when (state.scheduleType) {
+                    ScheduleType.WEEKLY -> WeeklyDateSection(state, viewModel)
+                    ScheduleType.SPECIFIC_DATE -> SpecificDateSection(state, viewModel)
+                    ScheduleType.MULTIPLE_DATES -> MultipleDatesSection(state, viewModel)
                 }
             }
 
@@ -220,26 +227,35 @@ fun RuleEditorScreen(viewModel: RuleEditorViewModel, onDone: () -> Unit) {
             }
 
             item {
-                Text(stringResource(R.string.rule_editor_repeat), style = MaterialTheme.typography.labelLarge)
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    DayOfWeek.entries.forEach { day ->
-                        FilterChip(
-                            selected = day in state.days,
-                            onClick = { viewModel.toggleDay(day) },
-                            label = { Text(dayLabels[day]?.let { stringResource(it) } ?: day.name.take(2)) }
-                        )
+                if (state.scheduleType == ScheduleType.WEEKLY) {
+                    Text(stringResource(R.string.rule_editor_repeat), style = MaterialTheme.typography.labelLarge)
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        DayOfWeek.entries.forEach { day ->
+                            FilterChip(
+                                selected = day in state.days,
+                                onClick = { viewModel.toggleDay(day) },
+                                label = { Text(dayLabels[day]?.let { stringResource(it) } ?: day.name.take(2)) }
+                            )
+                        }
                     }
-                }
-                Row(modifier = Modifier.wrapContentWidth()) {
-                    TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.EVERY_DAY) }) {
-                        Text(stringResource(R.string.rule_editor_preset_every_day))
-                    }
-                    TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.WEEKDAYS) }) {
-                        Text(stringResource(R.string.rule_editor_preset_weekdays))
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.EVERY_DAY) }) {
+                            Text(stringResource(R.string.rule_editor_preset_every_day))
+                        }
+                        TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.WEEKDAYS) }) {
+                            Text(stringResource(R.string.rule_editor_preset_weekdays))
+                        }
+                        TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.WEEKENDS) }) {
+                            Text(stringResource(R.string.rule_editor_preset_weekends))
+                        }
                     }
                 }
             }
@@ -363,5 +379,83 @@ private val RuleEditorValidationError.stringRes: Int
         RuleEditorValidationError.MESSAGE_REQUIRED -> R.string.validation_message_required
         RuleEditorValidationError.TIME_REQUIRED -> R.string.validation_time_required
         RuleEditorValidationError.DAY_REQUIRED -> R.string.validation_day_required
+        RuleEditorValidationError.DATE_REQUIRED -> R.string.validation_date_required
         RuleEditorValidationError.SAVE_FAILED -> R.string.validation_save_failed
     }
+
+private val ScheduleType.labelRes: Int
+    get() = when (this) {
+        ScheduleType.WEEKLY -> R.string.schedule_type_weekly
+        ScheduleType.SPECIFIC_DATE -> R.string.schedule_type_specific_date
+        ScheduleType.MULTIPLE_DATES -> R.string.schedule_type_multiple_dates
+    }
+
+@Composable
+private fun WeeklyDateSection(state: RuleEditorState, viewModel: RuleEditorViewModel) {
+    val context = LocalContext.current
+    Text(stringResource(R.string.rule_editor_start_date), style = MaterialTheme.typography.labelLarge)
+    DateButton(
+        date = state.startDate,
+        onClick = {
+            showDatePicker(context, state.startDate) { viewModel.updateStartDate(it) }
+        }
+    )
+}
+
+@Composable
+private fun SpecificDateSection(state: RuleEditorState, viewModel: RuleEditorViewModel) {
+    val context = LocalContext.current
+    val date = state.dates.firstOrNull() ?: LocalDate.now()
+    Text(stringResource(R.string.rule_editor_date), style = MaterialTheme.typography.labelLarge)
+    DateButton(
+        date = date,
+        onClick = {
+            showDatePicker(context, date) { selected ->
+                state.dates.forEach(viewModel::removeDate)
+                viewModel.addDate(selected)
+            }
+        }
+    )
+}
+
+@Composable
+private fun MultipleDatesSection(state: RuleEditorState, viewModel: RuleEditorViewModel) {
+    val context = LocalContext.current
+    val pickerBase = state.dates.lastOrNull() ?: LocalDate.now()
+    Text(stringResource(R.string.rule_editor_dates), style = MaterialTheme.typography.labelLarge)
+    LazyRow {
+        items(state.dates) { date ->
+            AssistChip(
+                onClick = { viewModel.removeDate(date) },
+                label = { Text("${date.format(startDateFormatter)}  ×") },
+                modifier = Modifier.padding(end = 8.dp)
+            )
+        }
+    }
+    OutlinedButton(onClick = {
+        showDatePicker(context, pickerBase) { viewModel.addDate(it) }
+    }) {
+        Text(stringResource(R.string.rule_editor_add_date))
+    }
+}
+
+@Composable
+private fun DateButton(date: LocalDate, onClick: () -> Unit) {
+    OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        Text(date.format(startDateFormatter))
+    }
+}
+
+private fun showDatePicker(
+    context: android.content.Context,
+    initial: LocalDate,
+    onDate: (LocalDate) -> Unit
+) {
+    DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth -> onDate(LocalDate.of(year, month + 1, dayOfMonth)) },
+        initial.year,
+        initial.monthValue - 1,
+        initial.dayOfMonth
+    ).show()
+}

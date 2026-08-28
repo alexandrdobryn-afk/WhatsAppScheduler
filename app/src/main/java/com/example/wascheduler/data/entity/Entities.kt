@@ -16,6 +16,7 @@ data class RuleEntity(
     val chatName: String,
     val message: String,
     val enabled: Boolean,
+    @ColumnInfo(defaultValue = "'WEEKLY'") val scheduleType: String,
     @ColumnInfo(defaultValue = "'1970-01-01'") val startDate: LocalDate,
     val allowedDelayMinutes: Int,
     val createdAt: Long,
@@ -46,6 +47,24 @@ data class RuleTimeEntity(
     val saturday: Boolean,
     val sunday: Boolean,
     val enabled: Boolean
+)
+
+@Entity(
+    tableName = "rule_dates",
+    foreignKeys = [
+        ForeignKey(
+            entity = RuleEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["ruleId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("ruleId"), Index(value = ["ruleId", "localDate"], unique = true)]
+)
+data class RuleDateEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val ruleId: Long,
+    val localDate: LocalDate
 )
 
 /**

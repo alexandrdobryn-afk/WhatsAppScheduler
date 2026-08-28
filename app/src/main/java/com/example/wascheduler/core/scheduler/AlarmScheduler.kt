@@ -7,6 +7,7 @@ import android.content.Intent
 import com.example.wascheduler.core.logging.LogComponent
 import com.example.wascheduler.core.logging.Logger
 import com.example.wascheduler.core.permissions.PermissionChecker
+import com.example.wascheduler.data.repository.SettingsRepository
 import com.example.wascheduler.domain.model.OccurrenceId
 import com.example.wascheduler.domain.repository.ExecutionRepository
 import com.example.wascheduler.domain.repository.RuleRepository
@@ -14,6 +15,7 @@ import com.example.wascheduler.domain.usecase.CollectDueOccurrencesUseCase
 import com.example.wascheduler.domain.usecase.ComputeNextOccurrenceUseCase
 import com.example.wascheduler.service.AlarmReceiver
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,6 +38,7 @@ class AlarmScheduler @Inject constructor(
     private val computeNextOccurrence: ComputeNextOccurrenceUseCase,
     private val collectDueOccurrences: CollectDueOccurrencesUseCase,
     private val permissionChecker: PermissionChecker,
+    private val settingsRepository: SettingsRepository,
     private val scheduleTimeZoneProvider: ScheduleTimeZoneProvider
 ) {
     private val alarmManager: AlarmManager
@@ -55,6 +58,10 @@ class AlarmScheduler @Inject constructor(
     /** Recomputes the nearest next occurrence from the DB and (re)schedules the single alarm for it. */
     suspend fun rescheduleNext() {
         cancel()
+        if (!settingsRepository.globalAutomationEnabled.first()) {
+            Logger.i(LogComponent.SCHEDULER, "Global automation disabled — leaving alarms cancelled")
+            return
+        }
         val zoneId = scheduleTimeZoneProvider.currentZoneId()
         val rules = ruleRepository.getAllEnabledRules()
 

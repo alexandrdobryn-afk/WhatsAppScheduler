@@ -6,7 +6,6 @@ import android.app.NotificationManager
 import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.example.wascheduler.core.locale.AppLocaleController
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -22,7 +21,6 @@ class App : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        AppLocaleController.applyPersistedPlatformLocale(this)
         createNotificationChannel()
     }
 

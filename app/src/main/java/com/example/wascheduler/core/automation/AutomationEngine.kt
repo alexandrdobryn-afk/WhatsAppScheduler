@@ -60,6 +60,7 @@ class AutomationEngine @Inject constructor(
 
         if (!settingsRepository.globalAutomationEnabled.first()) {
             Logger.i(LogComponent.EXECUTION, "Global automation disabled — skipping occurrence")
+            recordTerminal(occurrenceId, rule, scheduledAt, attemptNumber, ExecutionStatus.SKIPPED, null)
             return EngineOutcome.Skipped
         }
 
@@ -138,7 +139,7 @@ class AutomationEngine @Inject constructor(
         attemptNumber: Int,
         errorCode: ErrorCode
     ): EngineOutcome {
-        val willRetry = retryPolicy.hasMoreAttempts(attemptNumber)
+        val willRetry = retryPolicy.isRecoverable(errorCode) && retryPolicy.hasMoreAttempts(attemptNumber)
         recordTerminal(occurrenceId, rule, scheduledAt, attemptNumber, status = ExecutionStatus.FAILED, errorCode = errorCode)
         // Error notifications stay on regardless of the success-notification
         // preference (spec section 55: "errors желательно оставлять включёнными").

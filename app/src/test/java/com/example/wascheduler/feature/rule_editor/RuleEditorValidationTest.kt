@@ -1,6 +1,7 @@
 package com.example.wascheduler.feature.rule_editor
 
 import com.example.wascheduler.domain.model.DayOfWeekPresets
+import com.example.wascheduler.domain.model.ScheduleType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -55,5 +56,37 @@ class RuleEditorValidationTest {
 
         assertTrue(errors.isEmpty())
         assertFalse(errors.contains(RuleEditorValidationError.DAY_REQUIRED))
+    }
+
+    @Test
+    fun `specific date requires date but not weekday`() {
+        val errors = validateRuleEditorState(
+            RuleEditorState(
+                chatName = "Team chat",
+                message = "Daily report",
+                scheduleType = ScheduleType.SPECIFIC_DATE,
+                dates = emptyList(),
+                times = listOf(LocalTime.of(9, 0)),
+                days = emptySet()
+            )
+        )
+
+        assertEquals(listOf(RuleEditorValidationError.DATE_REQUIRED), errors)
+    }
+
+    @Test
+    fun `multiple dates state accepts multiple concrete dates without weekdays`() {
+        val errors = validateRuleEditorState(
+            RuleEditorState(
+                chatName = "Team chat",
+                message = "Daily report",
+                scheduleType = ScheduleType.MULTIPLE_DATES,
+                dates = listOf(LocalDate.of(2026, 8, 25), LocalDate.of(2026, 8, 28)),
+                times = listOf(LocalTime.of(9, 0)),
+                days = emptySet()
+            )
+        )
+
+        assertTrue(errors.isEmpty())
     }
 }

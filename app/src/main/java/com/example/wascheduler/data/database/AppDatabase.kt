@@ -6,12 +6,13 @@ import androidx.room.TypeConverters
 import com.example.wascheduler.data.dao.ExecutionDao
 import com.example.wascheduler.data.dao.RuleDao
 import com.example.wascheduler.data.entity.ExecutionEntity
+import com.example.wascheduler.data.entity.RuleDateEntity
 import com.example.wascheduler.data.entity.RuleEntity
 import com.example.wascheduler.data.entity.RuleTimeEntity
 
 @Database(
-    entities = [RuleEntity::class, RuleTimeEntity::class, ExecutionEntity::class],
-    version = 2,
+    entities = [RuleEntity::class, RuleTimeEntity::class, RuleDateEntity::class, ExecutionEntity::class],
+    version = 3,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

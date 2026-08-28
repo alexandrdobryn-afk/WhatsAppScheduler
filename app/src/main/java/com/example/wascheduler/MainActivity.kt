@@ -1,6 +1,5 @@
 package com.example.wascheduler
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,7 +26,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.wascheduler.core.locale.AppLocaleController
 import com.example.wascheduler.data.repository.AppTheme
 import com.example.wascheduler.feature.diagnostics.DiagnosticsScreen
 import com.example.wascheduler.feature.history.HistoryScreen
@@ -54,10 +52,6 @@ object Routes {
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(AppLocaleController.wrapForStoredLanguage(newBase))
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

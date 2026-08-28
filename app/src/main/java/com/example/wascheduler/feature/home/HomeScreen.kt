@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import com.example.wascheduler.R
 import com.example.wascheduler.domain.model.DayOfWeekPresets
 import com.example.wascheduler.domain.model.Rule
+import com.example.wascheduler.domain.model.ScheduleType
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
@@ -81,7 +83,9 @@ fun HomeScreen(
             items(state.rules, key = { it.id }) { rule ->
                 RuleSummaryCard(rule, onClick = { onEditRule(rule.id) }, onToggle = { enabled ->
                     viewModel.setRuleEnabled(rule.id, enabled)
-                }, onEdit = { onEditRule(rule.id) }, onDelete = { pendingDeleteRule = rule })
+                }, onEdit = { onEditRule(rule.id) }, onDuplicate = {
+                    viewModel.duplicateRule(rule.id, onEditRule)
+                }, onDelete = { pendingDeleteRule = rule })
             }
             item {
                 Button(onClick = onAddSchedule, modifier = Modifier.fillMaxWidth()) {
@@ -179,6 +183,7 @@ private fun RuleSummaryCard(
     onClick: () -> Unit,
     onToggle: (Boolean) -> Unit,
     onEdit: () -> Unit,
+    onDuplicate: () -> Unit,
     onDelete: () -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -197,13 +202,9 @@ private fun RuleSummaryCard(
                 Text(rule.name.ifBlank { rule.chatName }, style = MaterialTheme.typography.titleMedium)
                 Text(rule.chatName, style = MaterialTheme.typography.bodySmall)
                 Text("\"${rule.message}\"", style = MaterialTheme.typography.bodySmall)
-                Text(
-                    "${stringResource(R.string.rule_start_date)}: ${rule.startDate.format(summaryDateFormatter)}",
-                    style = MaterialTheme.typography.bodySmall
-                )
+                Text(scheduleSummary(rule), style = MaterialTheme.typography.bodySmall)
                 val times = rule.times.joinToString("  ") { it.localTime.toString() }
                 Text(times, style = MaterialTheme.typography.bodySmall)
-                Text(daySummary(rule.times.firstOrNull()?.days.orEmpty()), style = MaterialTheme.typography.bodySmall)
             }
             Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
                 IconButton(onClick = { menuExpanded = true }) {
@@ -225,6 +226,21 @@ private fun RuleSummaryCard(
                         }
                     )
                     DropdownMenuItem(
+                        text = { Text(stringResource(if (rule.enabled) R.string.action_disable else R.string.action_enable)) },
+                        onClick = {
+                            menuExpanded = false
+                            onToggle(!rule.enabled)
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.action_duplicate)) },
+                        leadingIcon = { Icon(Icons.Filled.ContentCopy, contentDescription = null) },
+                        onClick = {
+                            menuExpanded = false
+                            onDuplicate()
+                        }
+                    )
+                    DropdownMenuItem(
                         text = { Text(stringResource(R.string.action_delete)) },
                         leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
                         onClick = {
@@ -243,8 +259,26 @@ private fun RuleSummaryCard(
 private fun daySummary(days: Set<DayOfWeek>): String = when (days) {
     DayOfWeekPresets.EVERY_DAY -> stringResource(R.string.rule_days_every_day)
     DayOfWeekPresets.WEEKDAYS -> stringResource(R.string.rule_days_weekdays)
+    DayOfWeekPresets.WEEKENDS -> stringResource(R.string.rule_days_weekends)
     else -> DayOfWeek.entries.filter { it in days }.map { day -> stringResource(day.shortLabelRes) }.joinToString(" ")
 }
+
+@Composable
+private fun scheduleSummary(rule: Rule): String =
+    when (rule.scheduleType) {
+        ScheduleType.WEEKLY -> {
+            val days = rule.times.firstOrNull()?.days.orEmpty()
+            "${stringResource(R.string.schedule_type_weekly)} · ${daySummary(days)} · ${stringResource(R.string.rule_start_date)} ${rule.startDate.format(summaryDateFormatter)}"
+        }
+        ScheduleType.SPECIFIC_DATE -> {
+            val date = rule.dates.firstOrNull()?.format(summaryDateFormatter) ?: stringResource(R.string.status_unknown)
+            "${stringResource(R.string.schedule_type_specific_date)} · $date"
+        }
+        ScheduleType.MULTIPLE_DATES -> {
+            val dates = rule.dates.joinToString(" ") { it.format(summaryDateFormatter) }
+            "${stringResource(R.string.schedule_type_multiple_dates)} · $dates"
+        }
+    }
 
 private val DayOfWeek.shortLabelRes: Int
     get() = when (this) {

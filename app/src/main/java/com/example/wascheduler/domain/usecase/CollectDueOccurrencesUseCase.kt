@@ -1,8 +1,11 @@
 package com.example.wascheduler.domain.usecase
 
 import com.example.wascheduler.domain.model.Rule
+import com.example.wascheduler.domain.model.ScheduleType
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import javax.inject.Inject
@@ -35,14 +38,39 @@ class CollectDueOccurrencesUseCase @Inject constructor() {
             if (today.isBefore(rule.startDate)) continue
             for (time in rule.times) {
                 if (!time.enabled) continue
-                if (today.dayOfWeek !in time.days) continue
-                val scheduledZoned = ZonedDateTime.of(today, time.localTime, zoneId)
-                if (scheduledZoned.isAfter(now)) continue
-                val minutesLate = Duration.between(scheduledZoned, now).toMinutes()
-                if (minutesLate > rule.allowedDelayMinutes) continue
-                results += DueOccurrence(rule, scheduledZoned.toLocalDateTime())
+                if (!isDueDate(rule, time.localTime, time.days, today)) continue
+                collectIfWithinWindow(rule, time.localTime, zoneId, now, today, results)
             }
         }
         return results.sortedBy { it.scheduledAt }
+    }
+
+    private fun isDueDate(
+        rule: Rule,
+        localTime: LocalTime,
+        days: Set<java.time.DayOfWeek>,
+        today: LocalDate
+    ): Boolean =
+        when (rule.scheduleType) {
+            ScheduleType.WEEKLY -> today.dayOfWeek in days
+            ScheduleType.SPECIFIC_DATE,
+            ScheduleType.MULTIPLE_DATES -> today in rule.dates && rule.dates.any { date ->
+                date == today && !date.atTime(localTime).toLocalDate().isBefore(rule.startDate)
+            }
+        }
+
+    private fun collectIfWithinWindow(
+        rule: Rule,
+        localTime: LocalTime,
+        zoneId: ZoneId,
+        now: ZonedDateTime,
+        today: LocalDate,
+        results: MutableList<DueOccurrence>
+    ) {
+        val scheduledZoned = ZonedDateTime.of(today, localTime, zoneId)
+        if (scheduledZoned.isAfter(now)) return
+        val minutesLate = Duration.between(scheduledZoned, now).toMinutes()
+        if (minutesLate > rule.allowedDelayMinutes) return
+        results += DueOccurrence(rule, scheduledZoned.toLocalDateTime())
     }
 }

@@ -18,6 +18,7 @@
     <string name="home_system_needs_setup">Потрібне налаштування</string>
     <string name="rule_days_every_day">Щодня</string>
     <string name="rule_days_weekdays">Пн–Пт</string>
+    <string name="rule_days_weekends">Вихідні</string>
     <string name="rule_start_date">Початок</string>
 
     <string name="rule_editor_title_new">Новий розклад</string>
@@ -25,7 +26,11 @@
     <string name="rule_editor_name">Назва правила</string>
     <string name="rule_editor_group">Група WhatsApp</string>
     <string name="rule_editor_message">Повідомлення</string>
+    <string name="rule_editor_schedule_type">Тип розкладу</string>
     <string name="rule_editor_start_date">Дата початку</string>
+    <string name="rule_editor_date">Дата</string>
+    <string name="rule_editor_dates">Дати</string>
+    <string name="rule_editor_add_date">Додати дату</string>
     <string name="rule_editor_times">Час</string>
     <string name="rule_editor_add_time">Додати час</string>
     <string name="rule_editor_repeat">Повтор</string>
@@ -35,6 +40,10 @@
     <string name="rule_editor_test_send">Тестове надсилання</string>
     <string name="rule_editor_preset_every_day">Щодня</string>
     <string name="rule_editor_preset_weekdays">Пн–Пт</string>
+    <string name="rule_editor_preset_weekends">Вихідні</string>
+    <string name="schedule_type_weekly">Щотижня</string>
+    <string name="schedule_type_specific_date">Конкретна дата</string>
+    <string name="schedule_type_multiple_dates">Кілька дат</string>
     <string name="day_monday_short">Пн</string>
     <string name="day_tuesday_short">Вт</string>
     <string name="day_wednesday_short">Ср</string>
@@ -55,6 +64,9 @@
     <string name="action_send_test">Надіслати тест</string>
     <string name="action_delete">Видалити</string>
     <string name="action_edit">Редагувати</string>
+    <string name="action_enable">Увімкнути</string>
+    <string name="action_disable">Вимкнути</string>
+    <string name="action_duplicate">Дублювати</string>
     <string name="action_more">Ще</string>
     <string name="action_discard">Не зберігати</string>
     <string name="action_back">Назад</string>
@@ -65,10 +77,23 @@
     <string name="validation_message_required">Введіть повідомлення.</string>
     <string name="validation_time_required">Виберіть хоча б один час.</string>
     <string name="validation_day_required">Виберіть хоча б один день.</string>
+    <string name="validation_date_required">Виберіть хоча б одну дату.</string>
     <string name="validation_save_failed">Не вдалося зберегти розклад.</string>
     <string name="dry_run_ready">WhatsApp відкрито ✓\nЧат знайдено ✓\nЧат перевірено ✓\nПоле введення знайдено ✓\nКнопку надсилання знайдено ✓\n\nГотово</string>
 
     <string name="history_title">Історія</string>
+    <string name="history_filter_all">Усі</string>
+    <string name="history_filter_sent">Надіслано</string>
+    <string name="history_filter_failed">Помилки</string>
+    <string name="history_filter_skipped">Пропущено</string>
+    <string name="history_details_title">Деталі виконання</string>
+    <string name="history_scheduled">Заплановано</string>
+    <string name="history_started">Почато</string>
+    <string name="history_finished">Завершено</string>
+    <string name="history_target">Ціль</string>
+    <string name="history_status">Статус</string>
+    <string name="history_attempt">Спроба</string>
+    <string name="history_error">Помилка</string>
     <string name="status_scheduled">Заплановано</string>
     <string name="status_running">Виконується</string>
     <string name="status_sent">Надіслано</string>
@@ -113,6 +138,10 @@
     <string name="settings_export_report">Експортувати діагностичний звіт</string>
 
     <string name="diagnostics_title">Діагностика</string>
+    <string name="diagnostics_app_version">Версія застосунку</string>
+    <string name="diagnostics_android_version">Android</string>
+    <string name="diagnostics_manufacturer">Виробник</string>
+    <string name="diagnostics_whatsapp_version">Версія WhatsApp</string>
     <string name="diagnostics_whatsapp_installed">WhatsApp встановлено</string>
     <string name="diagnostics_accessibility">Accessibility</string>
     <string name="diagnostics_accessibility_permission">Дозвіл Accessibility</string>
@@ -154,6 +183,9 @@
     <string name="onboarding_notifications_description">Показують результат надсилання та помилки.</string>
     <string name="onboarding_exact_alarm_description">Потрібні, щоб запускати розклад точно у вибраний час.</string>
     <string name="onboarding_battery_description">Рекомендовано вимкнути обмеження батареї, щоб фонові надсилання не зупинялися системою.</string>
+    <string name="accessibility_disclosure_title">Використання Accessibility</string>
+    <string name="accessibility_disclosure_body">WA Schedule використовує Android Accessibility Service лише для дій, які ви налаштували: відкрити офіційний WhatsApp, знайти вказаний вами чат або групу, ввести заздалегідь підготовлене повідомлення та натиснути Send у запланований час.\n\nWA Schedule не читає і не зберігає вашу переписку.</string>
+    <string name="accessibility_disclosure_continue">Я розумію, продовжити</string>
 
     <string name="notification_channel_result">Результат надсилання</string>
     <string name="notification_sent_title">Повідомлення надіслано</string>
