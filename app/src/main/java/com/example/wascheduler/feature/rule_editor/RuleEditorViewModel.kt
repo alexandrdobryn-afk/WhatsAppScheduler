@@ -33,16 +33,32 @@ enum class RuleEditorValidationError {
     TIME_REQUIRED,
     DAY_REQUIRED,
     DATE_REQUIRED,
+    DATE_TIME_REQUIRED,
     SAVE_FAILED
 }
 
 fun validateRuleEditorState(state: RuleEditorState): List<RuleEditorValidationError> = buildList {
     if (state.chatName.isBlank()) add(RuleEditorValidationError.CHAT_REQUIRED)
     if (state.message.isBlank()) add(RuleEditorValidationError.MESSAGE_REQUIRED)
-    if (state.times.isEmpty()) add(RuleEditorValidationError.TIME_REQUIRED)
-    if (state.scheduleType == ScheduleType.WEEKLY && state.days.isEmpty()) add(RuleEditorValidationError.DAY_REQUIRED)
-    if (state.scheduleType != ScheduleType.WEEKLY && state.dates.isEmpty()) add(RuleEditorValidationError.DATE_REQUIRED)
+    when (state.scheduleType) {
+        ScheduleType.WEEKLY -> {
+            if (state.times.isEmpty()) add(RuleEditorValidationError.TIME_REQUIRED)
+            if (state.days.isEmpty()) add(RuleEditorValidationError.DAY_REQUIRED)
+        }
+        ScheduleType.SPECIFIC_DATE -> {
+            if (state.times.isEmpty()) add(RuleEditorValidationError.TIME_REQUIRED)
+            if (state.dates.isEmpty()) add(RuleEditorValidationError.DATE_REQUIRED)
+        }
+        ScheduleType.MULTIPLE_DATES -> {
+            if (state.dateTimes.isEmpty()) add(RuleEditorValidationError.DATE_TIME_REQUIRED)
+        }
+    }
 }
+
+data class RuleDateTimeSelection(
+    val date: LocalDate,
+    val time: LocalTime
+)
 
 data class RuleEditorState(
     val ruleId: Long = 0,
@@ -53,6 +69,7 @@ data class RuleEditorState(
     val startDate: LocalDate = LocalDate.now(),
     val dates: List<LocalDate> = listOf(LocalDate.now()),
     val times: List<LocalTime> = emptyList(),
+    val dateTimes: List<RuleDateTimeSelection> = emptyList(),
     val days: Set<DayOfWeek> = DayOfWeekPresets.EVERY_DAY,
     val allowedDelayMinutes: Int = 10,
     val enabled: Boolean = true,
@@ -94,7 +111,12 @@ class RuleEditorViewModel @Inject constructor(
                         scheduleType = rule.scheduleType,
                         startDate = rule.startDate,
                         dates = rule.dates.ifEmpty { listOf(rule.startDate) },
-                        times = rule.times.map { it.localTime }.sorted(),
+                        times = if (rule.scheduleType == ScheduleType.MULTIPLE_DATES) {
+                            rule.times.map { it.localTime }.distinct().sorted()
+                        } else {
+                            rule.times.map { it.localTime }.sorted()
+                        },
+                        dateTimes = rule.toDateTimeSelections(),
                         days = rule.times.firstOrNull()?.days ?: DayOfWeekPresets.EVERY_DAY,
                         allowedDelayMinutes = rule.allowedDelayMinutes,
                         enabled = rule.enabled,
@@ -115,9 +137,26 @@ class RuleEditorViewModel @Inject constructor(
     fun updateStartDate(value: LocalDate) = _state.update { markDirty(it).copy(startDate = value) }
     fun updateScheduleType(value: ScheduleType) = _state.update {
         val dirty = markDirty(it)
+        val seededDateTimes = if (value == ScheduleType.MULTIPLE_DATES && dirty.dateTimes.isEmpty()) {
+            buildDateTimeSelections(dirty.dates.ifEmpty { listOf(LocalDate.now()) }, dirty.times)
+        } else {
+            dirty.dateTimes
+        }
+        val seededTimes = if (value != ScheduleType.MULTIPLE_DATES && dirty.times.isEmpty() && seededDateTimes.isNotEmpty()) {
+            seededDateTimes.map { selection -> selection.time }.distinct().sorted()
+        } else {
+            dirty.times
+        }
         dirty.copy(
             scheduleType = value,
-            dates = if (value == ScheduleType.WEEKLY) dirty.dates else dirty.dates.ifEmpty { listOf(LocalDate.now()) }
+            dates = when {
+                value == ScheduleType.WEEKLY -> dirty.dates
+                value == ScheduleType.MULTIPLE_DATES && seededDateTimes.isNotEmpty() ->
+                    seededDateTimes.map { selection -> selection.date }.distinct().sorted()
+                else -> dirty.dates.ifEmpty { listOf(LocalDate.now()) }
+            },
+            times = seededTimes,
+            dateTimes = seededDateTimes
         )
     }
     fun addDate(value: LocalDate) = _state.update { markDirty(it).copy(dates = (it.dates + value).distinct().sorted()) }
@@ -133,6 +172,27 @@ class RuleEditorViewModel @Inject constructor(
     }
 
     fun removeTime(time: LocalTime) = _state.update { markDirty(it).copy(times = it.times - time) }
+
+    fun addDateTime(date: LocalDate, time: LocalTime) = _state.update {
+        val selection = RuleDateTimeSelection(date, time)
+        if (selection in it.dateTimes) {
+            it
+        } else {
+            val dateTimes = (it.dateTimes + selection).sortedDateTimes()
+            markDirty(it).copy(
+                dateTimes = dateTimes,
+                dates = dateTimes.map { item -> item.date }.distinct().sorted()
+            )
+        }
+    }
+
+    fun removeDateTime(selection: RuleDateTimeSelection) = _state.update {
+        val dateTimes = (it.dateTimes - selection).sortedDateTimes()
+        markDirty(it).copy(
+            dateTimes = dateTimes,
+            dates = dateTimes.map { item -> item.date }.distinct().sorted()
+        )
+    }
 
     fun toggleDay(day: DayOfWeek) = _state.update {
         markDirty(it).copy(days = if (day in it.days) it.days - day else it.days + day)
@@ -188,13 +248,7 @@ class RuleEditorViewModel @Inject constructor(
                     startDate = s.effectiveStartDate(),
                     dates = s.persistedDates(),
                     allowedDelayMinutes = s.allowedDelayMinutes,
-                    times = s.times.map { time ->
-                        RuleTime(
-                            ruleId = s.ruleId,
-                            localTime = time,
-                            days = if (s.scheduleType == ScheduleType.WEEKLY) s.days else emptySet()
-                        )
-                    }
+                    times = s.persistedTimes()
                 )
                 val persistedRuleId = ruleRepository.upsertRule(rule)
                 val persistedRule = ruleRepository.getRule(persistedRuleId)
@@ -267,7 +321,7 @@ private fun RuleEditorState.persistedDates(): List<LocalDate> =
     when (scheduleType) {
         ScheduleType.WEEKLY -> emptyList()
         ScheduleType.SPECIFIC_DATE -> dates.distinct().sorted().take(1)
-        ScheduleType.MULTIPLE_DATES -> dates.distinct().sorted()
+        ScheduleType.MULTIPLE_DATES -> dateTimes.map { it.date }.distinct().sorted()
     }
 
 private fun RuleEditorState.effectiveStartDate(): LocalDate =
@@ -276,3 +330,42 @@ private fun RuleEditorState.effectiveStartDate(): LocalDate =
         ScheduleType.SPECIFIC_DATE,
         ScheduleType.MULTIPLE_DATES -> persistedDates().minOrNull() ?: startDate
     }
+
+private fun RuleEditorState.persistedTimes(): List<RuleTime> =
+    when (scheduleType) {
+        ScheduleType.WEEKLY -> times.map { time ->
+            RuleTime(ruleId = ruleId, localTime = time, days = days)
+        }
+        ScheduleType.SPECIFIC_DATE -> times.map { time ->
+            RuleTime(ruleId = ruleId, localTime = time, days = emptySet())
+        }
+        ScheduleType.MULTIPLE_DATES -> dateTimes.sortedDateTimes().map { selection ->
+            RuleTime(
+                ruleId = ruleId,
+                localDate = selection.date,
+                localTime = selection.time,
+                days = emptySet()
+            )
+        }
+    }
+
+private fun Rule.toDateTimeSelections(): List<RuleDateTimeSelection> =
+    if (scheduleType != ScheduleType.MULTIPLE_DATES) {
+        emptyList()
+    } else {
+        val explicit = times.mapNotNull { time ->
+            time.localDate?.let { date -> RuleDateTimeSelection(date, time.localTime) }
+        }
+        explicit.ifEmpty { buildDateTimeSelections(dates, times.map { it.localTime }) }.sortedDateTimes()
+    }
+
+private fun buildDateTimeSelections(
+    dates: List<LocalDate>,
+    times: List<LocalTime>
+): List<RuleDateTimeSelection> =
+    dates.distinct().flatMap { date ->
+        times.distinct().map { time -> RuleDateTimeSelection(date, time) }
+    }.sortedDateTimes()
+
+private fun List<RuleDateTimeSelection>.sortedDateTimes(): List<RuleDateTimeSelection> =
+    distinct().sortedWith(compareBy<RuleDateTimeSelection> { it.date }.thenBy { it.time })

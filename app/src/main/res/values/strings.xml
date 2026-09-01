@@ -31,6 +31,8 @@
     <string name="rule_editor_date">Date</string>
     <string name="rule_editor_dates">Dates</string>
     <string name="rule_editor_add_date">Add date</string>
+    <string name="rule_editor_date_times">Dates and times</string>
+    <string name="rule_editor_add_date_time">Add date and time</string>
     <string name="rule_editor_times">Times</string>
     <string name="rule_editor_add_time">Add time</string>
     <string name="rule_editor_repeat">Repeat</string>
@@ -78,6 +80,7 @@
     <string name="validation_time_required">Select at least one time.</string>
     <string name="validation_day_required">Select at least one day.</string>
     <string name="validation_date_required">Select at least one date.</string>
+    <string name="validation_date_time_required">Select at least one date and time.</string>
     <string name="validation_save_failed">Failed to save schedule.</string>
     <string name="dry_run_ready">WhatsApp opened ✓\nChat found ✓\nChat verified ✓\nInput found ✓\nSend button found ✓\n\nReady</string>
 

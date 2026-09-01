@@ -70,7 +70,6 @@ The service is configured for:
 
 ```text
 com.whatsapp
-com.whatsapp.w4b
 ```
 
 It uses a state machine:

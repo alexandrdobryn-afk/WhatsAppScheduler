@@ -12,6 +12,10 @@ interact with the official WhatsApp application.
 
 [Download latest APK](https://github.com/alexandrdobryn-afk/WhatsAppScheduler/releases/latest/download/app-release.apk)
 
+Privacy Policy:
+
+[https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/](https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/)
+
 Current Android package name:
 
 ```text
@@ -37,10 +41,10 @@ Build verification in this repository:
 |---|---|
 | `:app:assembleDebug` | Passed |
 | `:app:assembleRelease` | Passed |
-| `:app:testDebugUnitTest` | 41 passed, 0 failed, 0 skipped |
-| `:app:lintDebug` | Passed, 0 errors, 57 warnings |
-| `:app:lintRelease` | Passed, 0 errors, 57 warnings |
+| `:app:testDebugUnitTest` | 45 passed, 0 failed, 0 skipped |
+| `:app:lintDebug` | Passed, 0 errors, 58 warnings |
 | Release APK signature | Verified with `apksigner` |
+| Release AAB signature | Verified with `jarsigner` |
 
 ## Screenshots
 
@@ -55,8 +59,8 @@ set is:
 
 - Schedule WhatsApp messages for personal WhatsApp accounts.
 - Send to a configured WhatsApp chat or group.
-- Choose weekly days, one specific date, or multiple dates with one or more
-  exact send times.
+- Choose weekly days, one specific date with one or more times, or multiple
+  date/time pairs.
 - Run locally on Android with no backend server.
 - Uses Android `AccessibilityService` to operate the official WhatsApp UI.
 - Stores only user-created rules and execution history in a local Room database.
@@ -78,7 +82,7 @@ set is:
 Current APK SHA-256:
 
 ```text
-5850C52636680AA520DC13AE78AD3E24E9915634FAEDCA2C285BE15C8A0A9C9E
+4B0A8B95EE2F7AAD9DC0B963F42B6EF5181DE1894753A7E28FBF473B6F7652C5
 ```
 
 Do not use `app-debug.apk` for normal installation. Use the signed release APK.
@@ -90,7 +94,7 @@ Future updates must be signed with the same private keystore.
 |---|---|
 | Accessibility Service | Required to interact with the official WhatsApp UI because personal WhatsApp has no public send-message API |
 | Notifications | Shows send success/failure status |
-| Exact alarms (`SCHEDULE_EXACT_ALARM`, `USE_EXACT_ALARM`) | Runs schedules at configured exact times |
+| Exact alarms (`SCHEDULE_EXACT_ALARM`) | Runs schedules at configured exact times after user grants Alarms & reminders access |
 | Boot completed | Restores scheduled alarms after reboot or app update |
 | Wake lock / foreground service | Helps complete scheduled work reliably |
 | Battery optimization exemption | Optional but recommended on aggressive OEM Android builds |
@@ -104,7 +108,7 @@ The app does not request `INTERNET`.
 - No root.
 - No telemetry.
 - No `INTERNET` permission.
-- The Accessibility service is restricted to `com.whatsapp` and `com.whatsapp.w4b`.
+- The Accessibility service is restricted to `com.whatsapp`.
 - The app does not store other people's WhatsApp messages.
 - Release builds use R8, resource shrinking, and a local signing key.
 - Internal receivers and services are not exported unless Android requires it.
@@ -116,9 +120,10 @@ The app does not request `INTERNET`.
 3. Enter the WhatsApp chat or group name exactly as it appears in WhatsApp.
 4. Enter the message text.
 5. Select the start date.
-6. Add one or more send times.
-7. Select weekdays.
-8. Save the rule.
+6. For weekly and specific-date rules, add one or more send times.
+7. For multiple-date rules, add each date/time pair.
+8. Select weekdays for weekly rules.
+9. Save the rule.
 
 For manual validation, use Dry Run before sending. Dry Run opens WhatsApp,
 searches the chat, verifies the input field and send button, then stops before
@@ -137,8 +142,8 @@ tapping Send.
   work from running.
 - Automated WhatsApp UI use may conflict with WhatsApp terms or app-store
   policies. Use responsibly for personal/local automation.
-- Google Play distribution is not the current target because automated
-  Accessibility use can conflict with store policy.
+- Google Play distribution requires accurate Accessibility declaration,
+  completed Play Console forms, and real runtime validation.
 
 ## Search Terms
 
@@ -169,7 +174,7 @@ WA Schedule — локальный Android-планировщик для авт�
 - Kotlin: 1.9.24
 - JDK: 17
 - minSdk: 31
-- targetSdk / compileSdk: 35
+- targetSdk / compileSdk: 36
 - UI: Jetpack Compose
 - DI: Hilt
 - Storage: Room + DataStore

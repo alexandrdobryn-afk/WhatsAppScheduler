@@ -33,12 +33,13 @@ data class RuleEntity(
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("ruleId")]
+    indices = [Index("ruleId"), Index(value = ["ruleId", "localDate"])]
 )
 data class RuleTimeEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val ruleId: Long,
     val localTime: LocalTime,
+    val localDate: LocalDate?,
     val monday: Boolean,
     val tuesday: Boolean,
     val wednesday: Boolean,

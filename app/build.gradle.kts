@@ -29,13 +29,13 @@ val releaseSigningConfigured =
 
 android {
     namespace = "com.example.wascheduler"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "io.github.alexandrdobryn.waschedule"
         // Minimum tested per spec: Android 12 (API 31)
         minSdk = 31
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 6
         versionName = "0.1.5"
 

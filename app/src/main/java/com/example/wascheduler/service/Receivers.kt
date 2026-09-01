@@ -1,5 +1,6 @@
 package com.example.wascheduler.service
 
+import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -43,6 +44,15 @@ class TimeChangeReceiver : BroadcastReceiver() {
         Logger.i(LogComponent.SCHEDULER, "Received ${intent.action} — rescheduling from current time")
         // A manual clock/timezone/date change invalidates whatever the previously
         // scheduled alarm instant assumed (spec section 20); recompute fully.
+        enqueueExecutionWorker(context)
+    }
+}
+
+@AndroidEntryPoint
+class ExactAlarmPermissionReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action != AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED) return
+        Logger.i(LogComponent.SCHEDULER, "Exact alarm permission changed — rescheduling from current DB state")
         enqueueExecutionWorker(context)
     }
 }

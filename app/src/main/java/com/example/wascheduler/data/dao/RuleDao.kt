@@ -23,7 +23,7 @@ interface RuleDao {
     @Query("SELECT * FROM rules ORDER BY name")
     fun observeAllWithTimesRaw(): Flow<List<RuleEntity>>
 
-    @Query("SELECT * FROM rule_times WHERE ruleId = :ruleId")
+    @Query("SELECT * FROM rule_times WHERE ruleId = :ruleId ORDER BY localDate, localTime")
     suspend fun timesForRule(ruleId: Long): List<RuleTimeEntity>
 
     @Query("SELECT * FROM rule_dates WHERE ruleId = :ruleId ORDER BY localDate")

@@ -207,23 +207,25 @@ fun RuleEditorScreen(viewModel: RuleEditorViewModel, onDone: () -> Unit) {
                 }
             }
 
-            item {
-                Text(stringResource(R.string.rule_editor_times), style = MaterialTheme.typography.labelLarge)
-                LazyRow {
-                    items(state.times) { time ->
-                        AssistChip(
-                            onClick = { viewModel.removeTime(time) },
-                            label = { Text("$time  ×") },
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
+            if (state.scheduleType != ScheduleType.MULTIPLE_DATES) {
+                item {
+                    Text(stringResource(R.string.rule_editor_times), style = MaterialTheme.typography.labelLarge)
+                    LazyRow {
+                        items(state.times) { time ->
+                            AssistChip(
+                                onClick = { viewModel.removeTime(time) },
+                                label = { Text("$time  ×") },
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
                     }
+                    OutlinedButton(onClick = {
+                        val now = LocalTime.now()
+                        TimePickerDialog(context, { _, hour, minute ->
+                            viewModel.addTime(LocalTime.of(hour, minute))
+                        }, now.hour, now.minute, true).show()
+                    }) { Text(stringResource(R.string.rule_editor_add_time)) }
                 }
-                OutlinedButton(onClick = {
-                    val now = LocalTime.now()
-                    TimePickerDialog(context, { _, hour, minute ->
-                        viewModel.addTime(LocalTime.of(hour, minute))
-                    }, now.hour, now.minute, true).show()
-                }) { Text(stringResource(R.string.rule_editor_add_time)) }
             }
 
             item {
@@ -380,6 +382,7 @@ private val RuleEditorValidationError.stringRes: Int
         RuleEditorValidationError.TIME_REQUIRED -> R.string.validation_time_required
         RuleEditorValidationError.DAY_REQUIRED -> R.string.validation_day_required
         RuleEditorValidationError.DATE_REQUIRED -> R.string.validation_date_required
+        RuleEditorValidationError.DATE_TIME_REQUIRED -> R.string.validation_date_time_required
         RuleEditorValidationError.SAVE_FAILED -> R.string.validation_save_failed
     }
 
@@ -421,21 +424,26 @@ private fun SpecificDateSection(state: RuleEditorState, viewModel: RuleEditorVie
 @Composable
 private fun MultipleDatesSection(state: RuleEditorState, viewModel: RuleEditorViewModel) {
     val context = LocalContext.current
-    val pickerBase = state.dates.lastOrNull() ?: LocalDate.now()
-    Text(stringResource(R.string.rule_editor_dates), style = MaterialTheme.typography.labelLarge)
+    val pickerBase = state.dateTimes.lastOrNull()?.date ?: state.dates.lastOrNull() ?: LocalDate.now()
+    Text(stringResource(R.string.rule_editor_date_times), style = MaterialTheme.typography.labelLarge)
     LazyRow {
-        items(state.dates) { date ->
+        items(state.dateTimes) { selection ->
             AssistChip(
-                onClick = { viewModel.removeDate(date) },
-                label = { Text("${date.format(startDateFormatter)}  ×") },
+                onClick = { viewModel.removeDateTime(selection) },
+                label = { Text("${selection.date.format(startDateFormatter)} · ${selection.time}  ×") },
                 modifier = Modifier.padding(end = 8.dp)
             )
         }
     }
     OutlinedButton(onClick = {
-        showDatePicker(context, pickerBase) { viewModel.addDate(it) }
+        showDatePicker(context, pickerBase) { selectedDate ->
+            val now = LocalTime.now()
+            TimePickerDialog(context, { _, hour, minute ->
+                viewModel.addDateTime(selectedDate, LocalTime.of(hour, minute))
+            }, now.hour, now.minute, true).show()
+        }
     }) {
-        Text(stringResource(R.string.rule_editor_add_date))
+        Text(stringResource(R.string.rule_editor_add_date_time))
     }
 }
 

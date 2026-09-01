@@ -38,7 +38,10 @@ class RuleDaoSchedulePersistenceTest {
         val dao = db.ruleDao()
         val ruleId = dao.upsertRuleWithSchedule(
             rule = sampleRule(scheduleType = "MULTIPLE_DATES"),
-            times = listOf(sampleTime(LocalTime.of(8, 0)), sampleTime(LocalTime.of(12, 30))),
+            times = listOf(
+                sampleTime(LocalDate.of(2026, 8, 25), LocalTime.of(8, 0)),
+                sampleTime(LocalDate.of(2026, 8, 28), LocalTime.of(12, 30))
+            ),
             dates = listOf(sampleDate(LocalDate.of(2026, 8, 25)), sampleDate(LocalDate.of(2026, 8, 28)))
         )
 
@@ -48,6 +51,7 @@ class RuleDaoSchedulePersistenceTest {
 
         assertEquals("MULTIPLE_DATES", persisted?.scheduleType)
         assertEquals(listOf(LocalTime.of(8, 0), LocalTime.of(12, 30)), times.map { it.localTime })
+        assertEquals(listOf(LocalDate.of(2026, 8, 25), LocalDate.of(2026, 8, 28)), times.map { it.localDate })
         assertEquals(listOf(LocalDate.of(2026, 8, 25), LocalDate.of(2026, 8, 28)), dates.map { it.localDate })
     }
 
@@ -56,7 +60,7 @@ class RuleDaoSchedulePersistenceTest {
         val dao = db.ruleDao()
         val ruleId = dao.upsertRuleWithSchedule(
             rule = sampleRule(scheduleType = "SPECIFIC_DATE"),
-            times = listOf(sampleTime(LocalTime.of(9, 0))),
+            times = listOf(sampleTime(null, LocalTime.of(9, 0))),
             dates = listOf(sampleDate(LocalDate.of(2026, 8, 25)))
         )
 
@@ -79,9 +83,10 @@ class RuleDaoSchedulePersistenceTest {
         updatedAt = 1L
     )
 
-    private fun sampleTime(localTime: LocalTime) = RuleTimeEntity(
+    private fun sampleTime(localDate: LocalDate?, localTime: LocalTime) = RuleTimeEntity(
         ruleId = 0,
         localTime = localTime,
+        localDate = localDate,
         monday = false,
         tuesday = false,
         wednesday = false,

@@ -75,7 +75,7 @@ class RuleEditorValidationTest {
     }
 
     @Test
-    fun `multiple dates state accepts multiple concrete dates without weekdays`() {
+    fun `multiple dates requires at least one date time pair`() {
         val errors = validateRuleEditorState(
             RuleEditorState(
                 chatName = "Team chat",
@@ -83,6 +83,24 @@ class RuleEditorValidationTest {
                 scheduleType = ScheduleType.MULTIPLE_DATES,
                 dates = listOf(LocalDate.of(2026, 8, 25), LocalDate.of(2026, 8, 28)),
                 times = listOf(LocalTime.of(9, 0)),
+                days = emptySet()
+            )
+        )
+
+        assertEquals(listOf(RuleEditorValidationError.DATE_TIME_REQUIRED), errors)
+    }
+
+    @Test
+    fun `multiple dates state accepts date time pairs without global times or weekdays`() {
+        val errors = validateRuleEditorState(
+            RuleEditorState(
+                chatName = "Team chat",
+                message = "Daily report",
+                scheduleType = ScheduleType.MULTIPLE_DATES,
+                dateTimes = listOf(
+                    RuleDateTimeSelection(LocalDate.of(2026, 8, 25), LocalTime.of(9, 0)),
+                    RuleDateTimeSelection(LocalDate.of(2026, 8, 28), LocalTime.of(18, 30))
+                ),
                 days = emptySet()
             )
         )

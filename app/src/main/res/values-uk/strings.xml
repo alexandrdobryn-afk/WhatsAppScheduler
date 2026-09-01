@@ -31,6 +31,8 @@
     <string name="rule_editor_date">Дата</string>
     <string name="rule_editor_dates">Дати</string>
     <string name="rule_editor_add_date">Додати дату</string>
+    <string name="rule_editor_date_times">Дати й час</string>
+    <string name="rule_editor_add_date_time">Додати дату й час</string>
     <string name="rule_editor_times">Час</string>
     <string name="rule_editor_add_time">Додати час</string>
     <string name="rule_editor_repeat">Повтор</string>
@@ -78,6 +80,7 @@
     <string name="validation_time_required">Виберіть хоча б один час.</string>
     <string name="validation_day_required">Виберіть хоча б один день.</string>
     <string name="validation_date_required">Виберіть хоча б одну дату.</string>
+    <string name="validation_date_time_required">Виберіть хоча б одну дату й час.</string>
     <string name="validation_save_failed">Не вдалося зберегти розклад.</string>
     <string name="dry_run_ready">WhatsApp відкрито ✓\nЧат знайдено ✓\nЧат перевірено ✓\nПоле введення знайдено ✓\nКнопку надсилання знайдено ✓\n\nГотово</string>
 

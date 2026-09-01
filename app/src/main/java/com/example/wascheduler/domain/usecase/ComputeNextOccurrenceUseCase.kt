@@ -57,11 +57,14 @@ class ComputeNextOccurrenceUseCase @Inject constructor() {
                         .filter { it.dayOfWeek in time.days }
                 }
             }
-            ScheduleType.SPECIFIC_DATE,
-            ScheduleType.MULTIPLE_DATES -> rule.dates
+            ScheduleType.SPECIFIC_DATE -> rule.dates
                 .asSequence()
                 .distinct()
                 .sorted()
                 .filter { !it.isBefore(searchStartDate) }
+            ScheduleType.MULTIPLE_DATES -> time.localDate
+                ?.let { sequenceOf(it) }
+                ?.filter { !it.isBefore(searchStartDate) }
+                ?: emptySequence()
         }
 }

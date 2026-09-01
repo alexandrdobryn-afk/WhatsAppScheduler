@@ -12,7 +12,7 @@ import com.example.wascheduler.data.entity.RuleTimeEntity
 
 @Database(
     entities = [RuleEntity::class, RuleTimeEntity::class, RuleDateEntity::class, ExecutionEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

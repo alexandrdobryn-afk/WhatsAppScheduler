@@ -34,7 +34,7 @@ data class AccessibilityConnectionSnapshot(
 
 /**
  * Accessibility service scoped, both in [android.R.xml] config and in code, to
- * WhatsApp's own package names only (spec sections 24-25). This service never
+ * WhatsApp's own package only (spec sections 24-25). This service never
  * inspects, logs, or reacts to events from any other application — the
  * packageNames allow-list in accessibility_service_config.xml enforces this at
  * the OS level, and [onAccessibilityEvent] re-checks it defensively.

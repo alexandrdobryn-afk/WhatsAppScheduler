@@ -203,7 +203,7 @@ private fun RuleSummaryCard(
                 Text(rule.chatName, style = MaterialTheme.typography.bodySmall)
                 Text("\"${rule.message}\"", style = MaterialTheme.typography.bodySmall)
                 Text(scheduleSummary(rule), style = MaterialTheme.typography.bodySmall)
-                val times = rule.times.joinToString("  ") { it.localTime.toString() }
+                val times = timeSummary(rule)
                 Text(times, style = MaterialTheme.typography.bodySmall)
             }
             Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
@@ -278,6 +278,16 @@ private fun scheduleSummary(rule: Rule): String =
             val dates = rule.dates.joinToString(" ") { it.format(summaryDateFormatter) }
             "${stringResource(R.string.schedule_type_multiple_dates)} · $dates"
         }
+    }
+
+private fun timeSummary(rule: Rule): String =
+    if (rule.scheduleType == ScheduleType.MULTIPLE_DATES) {
+        rule.times.joinToString("  ") { time ->
+            val date = time.localDate?.format(summaryDateFormatter) ?: "?"
+            "$date · ${time.localTime}"
+        }
+    } else {
+        rule.times.joinToString("  ") { it.localTime.toString() }
     }
 
 private val DayOfWeek.shortLabelRes: Int

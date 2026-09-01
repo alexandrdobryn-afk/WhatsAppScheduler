@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WA Schedule Privacy Policy</title>
+  <meta name="description" content="Privacy Policy for WA Schedule, a local Android app for scheduling user-configured WhatsApp messages.">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --text: #162026;
+      --muted: #53636d;
+      --line: #d9e0e5;
+      --accent: #147d64;
+      --panel: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.62;
+      color: var(--text);
+      background: var(--bg);
+    }
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 40px 20px 56px;
+    }
+    article {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 32px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 30px 0 10px;
+      font-size: 1.18rem;
+      line-height: 1.25;
+    }
+    p { margin: 0 0 14px; }
+    ul { padding-left: 22px; margin-top: 8px; }
+    a { color: var(--accent); font-weight: 700; }
+    code {
+      background: #eef3f5;
+      border-radius: 4px;
+      padding: 2px 5px;
+    }
+    .meta {
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .back {
+      display: inline-block;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 640px) {
+      article { padding: 24px 18px; }
+      main { padding: 24px 12px 40px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../">WA Schedule</a>
+    <article>
+      <h1>WA Schedule Privacy Policy</h1>
+      <p class="meta">Last updated: 2026-09-01</p>
+      <p class="meta">Support contact: SUPPORT_EMAIL_REQUIRED</p>
+      <p>WA Schedule is a local Android application for scheduling deterministic WhatsApp actions configured by the phone owner. WA Schedule is independent and is not affiliated with, endorsed by, or sponsored by WhatsApp LLC or Meta Platforms, Inc.</p>
+
+      <h2>1. Overview</h2>
+      <p>WA Schedule lets a user create local schedule rules that open the official consumer WhatsApp Android app, verify a configured chat or group, enter a message written by the user, and send it at the selected time. The app is designed for local, user-directed scheduling. It does not operate a developer backend and does not request the Android <code>INTERNET</code> permission.</p>
+
+      <h2>2. Information Stored On The Device</h2>
+      <p>WA Schedule stores schedule names, target chat or group names typed by the user, message text typed by the user, selected schedule type, dates, weekdays, times, timezone, retry settings, execution history, and app preferences locally on the Android device.</p>
+      <p>Rule, message, schedule, and execution-history data is stored in the app's private local Room database. App preferences are stored locally with DataStore.</p>
+
+      <h2>3. Scheduled Messages And Chat Names</h2>
+      <p>Message text and chat or group names are entered by the user and stored only so the app can execute the user's saved schedule or explicit test-send action. WA Schedule does not request Android Contacts permission and does not upload chat names or message text to the developer.</p>
+
+      <h2>4. Accessibility Service</h2>
+      <p>WA Schedule uses Android Accessibility Service only to perform WhatsApp actions explicitly configured by the user. The Accessibility service is restricted to the official consumer WhatsApp Android package (<code>com.whatsapp</code>) and is not used to inspect unrelated apps.</p>
+
+      <h2>5. How Accessibility Is Used</h2>
+      <p>When Dry Run, Test Send, or a scheduled send runs, WA Schedule may transiently inspect the currently visible WhatsApp screen to verify the target chat or group, locate the message input field, enter the prepared message text, locate the send button, press Send for Test Send and scheduled send, and return the device to Home after the action.</p>
+      <p>WA Schedule does not store WhatsApp conversation history, does not store Accessibility node trees, and does not upload Accessibility-derived screen contents to the developer.</p>
+
+      <h2>6. Data Collection</h2>
+      <p>WA Schedule does not collect schedule, message, diagnostic, or Accessibility-derived data for the developer. The current release has no developer-operated backend, no analytics SDK, no advertising SDK, no crash-reporting SDK, no billing SDK, and no Android <code>INTERNET</code> permission.</p>
+
+      <h2>7. Data Sharing</h2>
+      <p>WA Schedule does not share user data with the developer. For Test Send and scheduled send, the app transfers the user-authored message into the official WhatsApp app so WhatsApp can send it to the user-selected chat or group. This is a user-directed transfer initiated by the user's saved rule or explicit action, not developer-side collection.</p>
+
+      <h2>8. Network And Backend</h2>
+      <p>WA Schedule does not operate a backend server and does not declare the Android <code>INTERNET</code> permission. The app's scheduling rules, preferences, diagnostics, and execution history remain local to the device unless the user manually shares diagnostic files outside the app.</p>
+
+      <h2>9. Analytics And Advertising</h2>
+      <p>WA Schedule does not include analytics, advertising, tracking, attribution, marketing, or behavioral profiling SDKs.</p>
+
+      <h2>10. Local Storage And Retention</h2>
+      <p>Local rules, message text, chat or group names, preferences, and execution history remain on the device while the app is installed, unless the user deletes them or clears app storage. Diagnostic reports, when created by the user, are written to the app-specific external files area on the same device.</p>
+
+      <h2>11. Data Deletion</h2>
+      <p>Deleting a schedule removes its future schedule data from the app database. Users can remove local app data by deleting rules and history where available, clearing WA Schedule storage in Android settings, or uninstalling WA Schedule. Uninstalling the app removes its private local data from the device.</p>
+
+      <h2>12. Security</h2>
+      <p>WA Schedule stores app data in Android app-private storage. The app does not publish a cloud account system and does not transmit app data to a developer server. Device-level protections, backups, and local storage behavior are controlled by Android and the user's device settings.</p>
+
+      <h2>13. Children's Privacy</h2>
+      <p>WA Schedule is not designed for children and does not knowingly collect personal data from children. The app has no account system, backend, analytics, ads, or developer-side data collection in the current release.</p>
+
+      <h2>14. Changes To This Privacy Policy</h2>
+      <p>This Privacy Policy may be updated when WA Schedule changes its data handling, permissions, supported integrations, or release status. The "Last updated" date will be changed when the policy is updated.</p>
+
+      <h2>15. Contact</h2>
+      <p>SUPPORT_EMAIL_REQUIRED</p>
+    </article>
+  </main>
+</body>
+</html>

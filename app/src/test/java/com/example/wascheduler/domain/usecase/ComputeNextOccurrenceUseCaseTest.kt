@@ -182,19 +182,35 @@ class ComputeNextOccurrenceUseCaseTest {
     }
 
     @Test
-    fun `multiple dates returns earliest future date time pair`() {
+    fun `multiple dates uses each date specific time instead of cross product`() {
         val now = ZonedDateTime.of(2026, 8, 25, 15, 0, 0, 0, zone)
+        val firstDate = LocalDate.of(2026, 8, 25)
+        val secondDate = LocalDate.of(2026, 8, 28)
+        val thirdDate = LocalDate.of(2026, 9, 1)
         val rule = rule(
-            RuleTime(ruleId = 1, localTime = LocalTime.of(9, 0), days = emptySet()),
-            RuleTime(ruleId = 1, localTime = LocalTime.of(18, 0), days = emptySet()),
+            RuleTime(ruleId = 1, localDate = firstDate, localTime = LocalTime.of(9, 0), days = emptySet()),
+            RuleTime(ruleId = 1, localDate = secondDate, localTime = LocalTime.of(18, 0), days = emptySet()),
+            RuleTime(ruleId = 1, localDate = thirdDate, localTime = LocalTime.of(8, 0), days = emptySet()),
             scheduleType = ScheduleType.MULTIPLE_DATES,
-            dates = listOf(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 8, 28), LocalDate.of(2026, 8, 25))
+            dates = listOf(thirdDate, secondDate, firstDate)
         )
 
         val next = useCase.forRule(rule, zone, now)
 
-        assertEquals(LocalDate.of(2026, 8, 25), next?.zonedDateTime?.toLocalDate())
+        assertEquals(secondDate, next?.zonedDateTime?.toLocalDate())
         assertEquals(LocalTime.of(18, 0), next?.zonedDateTime?.toLocalTime())
+    }
+
+    @Test
+    fun `multiple dates ignores unpaired times without a date`() {
+        val now = ZonedDateTime.of(2026, 8, 25, 15, 0, 0, 0, zone)
+        val rule = rule(
+            RuleTime(ruleId = 1, localTime = LocalTime.of(18, 0), days = emptySet()),
+            scheduleType = ScheduleType.MULTIPLE_DATES,
+            dates = listOf(LocalDate.of(2026, 8, 25))
+        )
+
+        assertNull(useCase.forRule(rule, zone, now))
     }
 
     @Test

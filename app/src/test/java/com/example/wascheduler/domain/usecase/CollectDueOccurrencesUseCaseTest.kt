@@ -119,4 +119,57 @@ class CollectDueOccurrencesUseCaseTest {
 
         assertTrue(due.isEmpty())
     }
+
+    @Test
+    fun `multiple dates occurrence is due only for its matching date time pair`() {
+        val firstDate = LocalDate.of(2026, 8, 25)
+        val secondDate = LocalDate.of(2026, 8, 28)
+        val now = ZonedDateTime.of(2026, 8, 28, 16, 5, 0, 0, zone)
+        val rule = Rule(
+            id = 1,
+            name = "r",
+            chatName = "c",
+            message = "m",
+            enabled = true,
+            scheduleType = ScheduleType.MULTIPLE_DATES,
+            startDate = firstDate,
+            dates = listOf(firstDate, secondDate),
+            allowedDelayMinutes = 10,
+            times = listOf(
+                RuleTime(ruleId = 1, localDate = firstDate, localTime = LocalTime.of(14, 30), days = emptySet()),
+                RuleTime(ruleId = 1, localDate = secondDate, localTime = LocalTime.of(16, 0), days = emptySet())
+            )
+        )
+
+        val due = useCase.collect(listOf(rule), zone, now)
+
+        assertEquals(1, due.size)
+        assertEquals(secondDate.atTime(16, 0), due.first().scheduledAt)
+    }
+
+    @Test
+    fun `multiple dates does not reuse another date's time`() {
+        val firstDate = LocalDate.of(2026, 8, 25)
+        val secondDate = LocalDate.of(2026, 8, 28)
+        val now = ZonedDateTime.of(2026, 8, 28, 14, 35, 0, 0, zone)
+        val rule = Rule(
+            id = 1,
+            name = "r",
+            chatName = "c",
+            message = "m",
+            enabled = true,
+            scheduleType = ScheduleType.MULTIPLE_DATES,
+            startDate = firstDate,
+            dates = listOf(firstDate, secondDate),
+            allowedDelayMinutes = 10,
+            times = listOf(
+                RuleTime(ruleId = 1, localDate = firstDate, localTime = LocalTime.of(14, 30), days = emptySet()),
+                RuleTime(ruleId = 1, localDate = secondDate, localTime = LocalTime.of(16, 0), days = emptySet())
+            )
+        )
+
+        val due = useCase.collect(listOf(rule), zone, now)
+
+        assertTrue(due.isEmpty())
+    }
 }

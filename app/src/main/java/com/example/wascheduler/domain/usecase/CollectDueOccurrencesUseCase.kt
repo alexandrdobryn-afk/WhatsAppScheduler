@@ -1,6 +1,7 @@
 package com.example.wascheduler.domain.usecase
 
 import com.example.wascheduler.domain.model.Rule
+import com.example.wascheduler.domain.model.RuleTime
 import com.example.wascheduler.domain.model.ScheduleType
 import java.time.Duration
 import java.time.LocalDate
@@ -38,7 +39,7 @@ class CollectDueOccurrencesUseCase @Inject constructor() {
             if (today.isBefore(rule.startDate)) continue
             for (time in rule.times) {
                 if (!time.enabled) continue
-                if (!isDueDate(rule, time.localTime, time.days, today)) continue
+                if (!isDueDate(rule, time, today)) continue
                 collectIfWithinWindow(rule, time.localTime, zoneId, now, today, results)
             }
         }
@@ -47,16 +48,15 @@ class CollectDueOccurrencesUseCase @Inject constructor() {
 
     private fun isDueDate(
         rule: Rule,
-        localTime: LocalTime,
-        days: Set<java.time.DayOfWeek>,
+        time: RuleTime,
         today: LocalDate
     ): Boolean =
         when (rule.scheduleType) {
-            ScheduleType.WEEKLY -> today.dayOfWeek in days
-            ScheduleType.SPECIFIC_DATE,
-            ScheduleType.MULTIPLE_DATES -> today in rule.dates && rule.dates.any { date ->
-                date == today && !date.atTime(localTime).toLocalDate().isBefore(rule.startDate)
+            ScheduleType.WEEKLY -> today.dayOfWeek in time.days
+            ScheduleType.SPECIFIC_DATE -> today in rule.dates && rule.dates.any { date ->
+                date == today && !date.atTime(time.localTime).toLocalDate().isBefore(rule.startDate)
             }
+            ScheduleType.MULTIPLE_DATES -> time.localDate == today && !today.isBefore(rule.startDate)
         }
 
     private fun collectIfWithinWindow(

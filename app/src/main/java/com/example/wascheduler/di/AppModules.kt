@@ -34,7 +34,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
 
     private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -58,6 +58,45 @@ object DatabaseModule {
             )
             db.execSQL("CREATE INDEX IF NOT EXISTS `index_rule_dates_ruleId` ON `rule_dates` (`ruleId`)")
             db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_rule_dates_ruleId_localDate` ON `rule_dates` (`ruleId`, `localDate`)")
+        }
+    }
+
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE rule_times ADD COLUMN localDate TEXT DEFAULT NULL")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_rule_times_ruleId_localDate` ON `rule_times` (`ruleId`, `localDate`)")
+            db.execSQL(
+                """
+                INSERT INTO `rule_times` (
+                    `ruleId`, `localTime`, `localDate`,
+                    `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday`,
+                    `enabled`
+                )
+                SELECT
+                    t.`ruleId`, t.`localTime`, d.`localDate`,
+                    t.`monday`, t.`tuesday`, t.`wednesday`, t.`thursday`, t.`friday`, t.`saturday`, t.`sunday`,
+                    t.`enabled`
+                FROM `rule_times` t
+                INNER JOIN `rules` r ON r.`id` = t.`ruleId`
+                INNER JOIN `rule_dates` d ON d.`ruleId` = t.`ruleId`
+                WHERE r.`scheduleType` = 'MULTIPLE_DATES'
+                  AND t.`localDate` IS NULL
+                """.trimIndent()
+            )
+            db.execSQL(
+                """
+                DELETE FROM `rule_times`
+                WHERE `localDate` IS NULL
+                  AND `ruleId` IN (
+                      SELECT r.`id`
+                      FROM `rules` r
+                      WHERE r.`scheduleType` = 'MULTIPLE_DATES'
+                        AND EXISTS (
+                            SELECT 1 FROM `rule_dates` d WHERE d.`ruleId` = r.`id`
+                        )
+                  )
+                """.trimIndent()
+            )
         }
     }
 

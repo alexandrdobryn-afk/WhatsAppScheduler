@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WA Schedule</title>
+  <meta name="description" content="WA Schedule is a local Android app for scheduling user-configured WhatsApp messages.">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --text: #162026;
+      --muted: #53636d;
+      --line: #d9e0e5;
+      --accent: #147d64;
+      --panel: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
+    main {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 56px 20px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 32px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin-top: 32px;
+      font-size: 1.25rem;
+    }
+    p { margin: 0 0 16px; }
+    ul { padding-left: 22px; }
+    a { color: var(--accent); font-weight: 700; }
+    .lead {
+      font-size: 1.18rem;
+      color: var(--muted);
+    }
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .links a {
+      display: inline-block;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 10px 14px;
+      text-decoration: none;
+    }
+    .disclaimer {
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="panel" aria-labelledby="title">
+      <h1 id="title">WA Schedule</h1>
+      <p class="lead">Scheduled WhatsApp messages for Android.</p>
+      <p>WA Schedule is a local Android application for user-configured deterministic schedules on a personal WhatsApp account.</p>
+      <ul>
+        <li>Runs locally on Android.</li>
+        <li>Uses user-configured schedule rules.</li>
+        <li>Works with a personal WhatsApp account.</li>
+        <li>Does not operate a backend server.</li>
+        <li>Does not include analytics or advertising SDKs.</li>
+      </ul>
+      <div class="links" aria-label="Project links">
+        <a href="./privacy/">Privacy Policy</a>
+        <a href="https://github.com/alexandrdobryn-afk/WhatsAppScheduler">GitHub repository</a>
+        <a href="https://github.com/alexandrdobryn-afk/WhatsAppScheduler/releases/latest">Latest release</a>
+      </div>
+      <p class="disclaimer">WA Schedule is an independent application and is not affiliated with, endorsed by, or sponsored by WhatsApp LLC or Meta Platforms, Inc.</p>
+    </section>
+  </main>
+</body>
+</html>

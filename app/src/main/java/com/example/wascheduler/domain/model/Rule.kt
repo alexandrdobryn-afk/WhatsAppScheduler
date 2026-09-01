@@ -13,7 +13,8 @@ enum class ScheduleType {
 /**
  * A single scheduled-send rule: one target chat/group, one message, one or more
  * times, and either weekly days or concrete calendar dates. Multiple different
- * messages still require multiple rules.
+ * messages still require multiple rules. For MULTIPLE_DATES, each RuleTime can
+ * carry its own localDate so a date has its own specific time.
  */
 data class Rule(
     val id: Long = 0,
@@ -41,6 +42,7 @@ data class RuleTime(
     val ruleId: Long,
     val localTime: LocalTime,
     val days: Set<DayOfWeek>,
+    val localDate: LocalDate? = null,
     val enabled: Boolean = true
 )
 

@@ -63,7 +63,7 @@ class RuleRepositoryImpl @Inject constructor(
     private fun Rule.persistedDateEntities(): List<RuleDateEntity> =
         when (scheduleType) {
             ScheduleType.WEEKLY -> emptyList()
-            ScheduleType.SPECIFIC_DATE,
-            ScheduleType.MULTIPLE_DATES -> dates.distinct().sorted().map { RuleDateEntity(ruleId = id, localDate = it) }
+            ScheduleType.SPECIFIC_DATE -> dates.distinct().sorted().map { RuleDateEntity(ruleId = id, localDate = it) }
+            ScheduleType.MULTIPLE_DATES -> times.mapNotNull { it.localDate }.distinct().sorted().map { RuleDateEntity(ruleId = id, localDate = it) }
         }
 }

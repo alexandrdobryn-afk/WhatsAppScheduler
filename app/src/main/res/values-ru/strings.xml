@@ -31,6 +31,8 @@
     <string name="rule_editor_date">Дата</string>
     <string name="rule_editor_dates">Даты</string>
     <string name="rule_editor_add_date">Добавить дату</string>
+    <string name="rule_editor_date_times">Даты и время</string>
+    <string name="rule_editor_add_date_time">Добавить дату и время</string>
     <string name="rule_editor_times">Время</string>
     <string name="rule_editor_add_time">Добавить время</string>
     <string name="rule_editor_repeat">Повтор</string>
@@ -78,6 +80,7 @@
     <string name="validation_time_required">Выберите хотя бы одно время.</string>
     <string name="validation_day_required">Выберите хотя бы один день.</string>
     <string name="validation_date_required">Выберите хотя бы одну дату.</string>
+    <string name="validation_date_time_required">Выберите хотя бы одну дату и время.</string>
     <string name="validation_save_failed">Не удалось сохранить расписание.</string>
     <string name="dry_run_ready">WhatsApp открыт ✓\nЧат найден ✓\nЧат проверен ✓\nПоле ввода найдено ✓\nКнопка отправки найдена ✓\n\nГотово</string>
 

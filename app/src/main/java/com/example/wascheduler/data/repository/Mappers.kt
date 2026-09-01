@@ -44,6 +44,7 @@ fun RuleTimeEntity.toDomain(): RuleTime = RuleTime(
     id = id,
     ruleId = ruleId,
     localTime = localTime,
+    localDate = localDate,
     days = buildSet {
         if (monday) add(DayOfWeek.MONDAY)
         if (tuesday) add(DayOfWeek.TUESDAY)
@@ -61,6 +62,7 @@ fun RuleTime.toEntity(): RuleTimeEntity = RuleTimeEntity(
     id = id,
     ruleId = ruleId,
     localTime = localTime,
+    localDate = localDate,
     monday = DayOfWeek.MONDAY in days,
     tuesday = DayOfWeek.TUESDAY in days,
     wednesday = DayOfWeek.WEDNESDAY in days,

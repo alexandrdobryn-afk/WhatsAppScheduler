@@ -18,8 +18,7 @@ import javax.inject.Singleton
 /** Package names of officially supported WhatsApp builds (spec section 24). */
 object WhatsAppPackages {
     const val CONSUMER = "com.whatsapp"
-    const val BUSINESS = "com.whatsapp.w4b"
-    val ALL = listOf(CONSUMER, BUSINESS)
+    val ALL = listOf(CONSUMER)
 }
 
 data class PermissionState(

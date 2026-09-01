@@ -1,0 +1,104 @@
+{
+  "app": {
+    "name": "WA Schedule",
+    "applicationId": "io.github.alexandrdobryn.waschedule",
+    "versionCode": 6,
+    "versionName": "0.1.5",
+    "minSdk": 31,
+    "compileSdk": 36,
+    "targetSdk": 36
+  },
+  "audit": {
+    "date": "2026-08-31",
+    "status": "CONDITIONAL_GO",
+    "uploadReady": "CONDITIONAL",
+    "productionReady": false,
+    "p0BlockersBefore": 4,
+    "p0CodeBlockersAfter": 0,
+    "remainingSubmissionPrerequisites": [
+      "SUPPORT_EMAIL_REQUIRED",
+      "ACCESSIBILITY_REVIEW_VIDEO_REQUIRED",
+      "PLAY_CONSOLE_FORMS_REQUIRED",
+      "PRIVACY_POLICY_PUBLIC_URL_HTTP_200_VERIFICATION_REQUIRED"
+    ],
+    "accessibilityRisk": "HIGH_BUT_DECLARATION_READY",
+    "runtimeStatus": "NOT_TESTED_NO_ADB_DEVICE"
+  },
+  "artifacts": {
+    "releaseApk": "app/build/outputs/apk/release/app-release.apk",
+    "releaseAab": "app/build/outputs/bundle/release/app-release.aab",
+    "releaseApkSha256": "4B0A8B95EE2F7AAD9DC0B963F42B6EF5181DE1894753A7E28FBF473B6F7652C5",
+    "releaseAabSha256": "06C2ECB3305082076EC82C004773EC0F5DEF43CDA5A7F1F2443186E80D70C7C4",
+    "apkSignature": "PASS_V2",
+    "aabSignature": "PASS_JARSIGNER_WITH_WARNINGS"
+  },
+  "checks": {
+    "assembleDebug": "PASS",
+    "testDebugUnitTest": "PASS",
+    "lintDebug": "PASS_WITH_58_WARNINGS",
+    "assembleRelease": "PASS",
+    "bundleRelease": "PASS",
+    "compileDebugAndroidTestKotlin": "PASS",
+    "aaptBadging": "PASS_TARGET_36_COMPILE_36",
+    "mergedManifest": "PASS",
+    "adbDevices": "NO_DEVICES",
+    "runtimeE2E": "NOT_TESTED",
+    "whatsappE2E": "NOT_TESTED",
+    "screenOff": "NOT_TESTED",
+    "migration": "NOT_TESTED",
+    "reliability30Sends": "NOT_TESTED"
+  },
+  "permissions": {
+    "declared": [
+      "android.permission.SCHEDULE_EXACT_ALARM",
+      "android.permission.RECEIVE_BOOT_COMPLETED",
+      "android.permission.POST_NOTIFICATIONS",
+      "android.permission.FOREGROUND_SERVICE",
+      "android.permission.WAKE_LOCK",
+      "android.permission.ACCESS_NETWORK_STATE"
+    ],
+    "removed": [
+      "android.permission.USE_EXACT_ALARM"
+    ],
+    "internetDeclared": false,
+    "queryAllPackagesDeclared": false,
+    "restrictedExactAlarmRisk": false
+  },
+  "accessibility": {
+    "packageScope": [
+      "com.whatsapp"
+    ],
+    "whatsAppBusinessInScope": false,
+    "flagRetrieveInteractiveWindows": false,
+    "flagReportViewIds": true,
+    "canRetrieveWindowContent": true,
+    "coordinateAutomationFound": false,
+    "dispatchGestureFound": false,
+    "clipboardAutomationFound": false,
+    "autonomousDecisionMakingFound": false,
+    "unrelatedAppScrapingFound": false,
+    "declarationStatus": "READY"
+  },
+  "privacy": {
+    "status": "PUBLIC_URL_PREPARED_NEEDS_HTTP_200_VERIFICATION_AND_SUPPORT_EMAIL",
+    "publicUrl": "https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/",
+    "supportPlaceholder": "SUPPORT_EMAIL_REQUIRED",
+    "developerSideCollection": false,
+    "backend": false,
+    "analytics": false,
+    "ads": false
+  },
+  "dataSafety": {
+    "status": "READY_NEEDS_PLAY_CONSOLE_REVIEW",
+    "developerSideCollection": false,
+    "userDirectedTransferToWhatsApp": true,
+    "sharedWithDeveloper": false
+  },
+  "topActions": [
+    "Provide support email or stable support page.",
+    "Verify public Privacy Policy URL after GitHub Pages deployment.",
+    "Record Accessibility review video using consumer WhatsApp only.",
+    "Run manual runtime validation checklist on emulator/device.",
+    "Upload rebuilt AAB to internal testing after Play Console forms are complete."
+  ]
+}
