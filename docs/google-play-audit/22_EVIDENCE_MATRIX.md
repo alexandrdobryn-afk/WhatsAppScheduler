@@ -23,7 +23,8 @@
 | Internet permission | Not declared | PASS |
 | Ads SDK | Not found in scans | PASS |
 | Analytics SDK | Not found in scans | PASS |
-| Privacy public URL | `https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/` prepared via GitHub Pages workflow | PENDING DEPLOYMENT VERIFICATION |
+| Privacy public URL | `https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/` prepared via GitHub Pages workflow | MANUAL PAGES ENABLEMENT REQUIRED |
+| Pages workflow | First pushed workflow run failed at Configure Pages; Pages API returned 404 for repository Pages site | MANUAL ACTION REQUIRED |
 | Support contact placeholder | `SUPPORT_EMAIL_REQUIRED` | NEEDS USER ACTION |
 | ADB device | `adb devices -l` showed no devices | NOT AVAILABLE |
 | Runtime instrumentation | Requires connected emulator/device | NOT TESTED |

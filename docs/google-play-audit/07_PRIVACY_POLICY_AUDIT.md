@@ -31,6 +31,6 @@ Current Privacy Policy coverage:
 Remaining user action:
 
 - Replace `SUPPORT_EMAIL_REQUIRED` with a real support email or stable support page.
-- Verify GitHub Pages deployment and HTTP 200 after push.
+- Enable GitHub Pages Source = GitHub Actions in repository settings, rerun the Pages workflow, and verify HTTP 200 after deployment.
 
-Privacy Policy status: PUBLIC URL PREPARED; NEEDS DEPLOYMENT VERIFICATION AND SUPPORT CONTACT.
+Privacy Policy status: PUBLIC URL PREPARED; NEEDS MANUAL PAGES ENABLEMENT, DEPLOYMENT VERIFICATION, AND SUPPORT CONTACT.

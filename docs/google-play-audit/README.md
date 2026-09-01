@@ -15,7 +15,7 @@ P0 code blockers after remediation: 0
 Remaining user/submission prerequisites:
 
 1. `SUPPORT_EMAIL_REQUIRED`
-2. Public Privacy Policy URL HTTP 200 verification after GitHub Pages deployment.
+2. Enable GitHub Pages Source = GitHub Actions, rerun the Pages workflow, and verify public Privacy Policy URL HTTP 200.
 3. Accessibility review video must be recorded from the validated build.
 4. Runtime matrix remains `NOT TESTED` because no ADB-visible emulator/device was available.
 

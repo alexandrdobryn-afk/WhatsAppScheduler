@@ -27,7 +27,7 @@
 1. Provide support email or stable support page.
 2. Record Accessibility review video.
 3. Complete Play Console forms.
-4. Verify public Privacy Policy URL after GitHub Pages deployment.
+4. Enable GitHub Pages Source = GitHub Actions, rerun the Pages workflow, and verify public Privacy Policy URL after deployment.
 
 ## Remaining Runtime Risks
 
@@ -40,8 +40,10 @@
 ## Recommended Next Order
 
 1. User provides support email.
-2. Install release APK/AAB-derived build on Pixel 8 / Android 15 and Android 16 emulator/device.
-3. Execute `23_MANUAL_RUNTIME_VALIDATION_CHECKLIST.md`.
-4. Record Accessibility review video from the same behavior.
-5. Upload AAB to internal testing.
-6. Start closed testing and production access process if required.
+2. Enable GitHub Pages Source = GitHub Actions in repository settings.
+3. Rerun the Pages workflow and verify the Privacy Policy URL.
+4. Install release APK/AAB-derived build on Pixel 8 / Android 15 and Android 16 emulator/device.
+5. Execute `23_MANUAL_RUNTIME_VALIDATION_CHECKLIST.md`.
+6. Record Accessibility review video from the same behavior.
+7. Upload AAB to internal testing.
+8. Start closed testing and production access process if required.

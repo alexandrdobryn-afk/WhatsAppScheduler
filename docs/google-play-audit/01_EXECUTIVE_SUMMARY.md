@@ -22,7 +22,7 @@ Remaining blockers before actual Play submission:
 1. Replace `SUPPORT_EMAIL_REQUIRED` with a real support email or stable support page.
 2. Record the Accessibility review video.
 3. Complete Play Console forms using the updated policy docs.
-4. Verify GitHub Pages deployment and HTTP 200 for the Privacy Policy URL after push.
+4. Enable GitHub Pages Source = GitHub Actions in repository settings, rerun the Pages workflow, and verify HTTP 200 for the Privacy Policy URL.
 
 Runtime status:
 
@@ -33,3 +33,11 @@ P0 blockers before remediation: 4
 P0 code blockers after remediation: 0
 
 Remaining submission prerequisites: 4
+
+Post-push Pages status:
+
+The Pages workflow was created and pushed, but the first run failed at
+`actions/configure-pages`. The public Pages API currently returns 404 for this
+repository's Pages site, so repository Pages must be enabled manually:
+
+GitHub repository -> Settings -> Pages -> Source -> GitHub Actions.
