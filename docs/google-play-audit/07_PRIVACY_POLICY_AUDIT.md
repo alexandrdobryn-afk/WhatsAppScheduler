@@ -4,9 +4,9 @@ Existing file reviewed and updated: `PRIVACY.md`
 
 Production-readiness changes made:
 
-- Last updated date changed to 2026-09-01.
+- Last updated date changed to 2026-09-02.
 - Added public Privacy Policy URL target: `https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/`.
-- Added `SUPPORT_EMAIL_REQUIRED`.
+- Added support email: `alexapp.support@gmail.com`.
 - Clarified Room local storage for rules, message text, schedules, and execution history.
 - Clarified DataStore local storage for onboarding, language, and settings.
 - Clarified that no developer backend receives schedule, message, diagnostic, or Accessibility-derived data.
@@ -28,10 +28,12 @@ Current Privacy Policy coverage:
 - No ads: covered.
 - No developer-side collection: covered for current no-`INTERNET` release.
 
-Remaining user action:
+Current submission state:
 
-- Replace `SUPPORT_EMAIL_REQUIRED` with a real support email or stable support page.
-- Enable GitHub Pages Source = GitHub Actions in repository settings, rerun the Pages workflow, and verify HTTP 200 after deployment.
-- Add a user-visible in-app Privacy Policy link, for example Settings -> About -> Privacy Policy. Current app Settings implementation was checked and no Privacy Policy link was found.
+- Public Privacy Policy URL is defined: `https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/`.
+- Support contact is defined: `alexapp.support@gmail.com`.
+- In-app Privacy Policy link is implemented in Settings -> About -> Privacy Policy.
+- In-app Support contact is implemented in Settings -> About -> Support.
+- Public landing and Privacy Policy URLs returned HTTP 200 on 2026-09-02.
 
-Privacy Policy status: PUBLIC URL PREPARED; NEEDS IN-APP LINK, MANUAL PAGES ENABLEMENT, DEPLOYMENT VERIFICATION, AND SUPPORT CONTACT.
+Privacy Policy status: READY.

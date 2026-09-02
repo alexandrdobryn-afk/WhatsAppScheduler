@@ -13,6 +13,7 @@ Remediation result:
 - Disclosure must now refer only to official consumer WhatsApp support.
 - It must not mention WhatsApp Business unless support is re-added and tested.
 - It must not imply that data is sent to the developer.
+- App resource strings now match the final disclosure meaning in English, Russian, and Ukrainian.
 
 Final disclosure wording prepared for Play review:
 
@@ -33,5 +34,5 @@ Status:
 - Placement: PASS
 - Explicit consent: PASS
 - Decline path: PASS
-- Final wording draft: READY.
-- Current app resource strings were checked and are shorter than this final wording. Updating in-app strings should be handled as a separate Android/UI change because this pass does not change product functionality.
+- Final wording in app resources: PASS.
+- Declaration alignment: READY.

@@ -1,10 +1,10 @@
 # Privacy Policy Draft
 
-Last updated: 2026-09-01
+Last updated: 2026-09-02
 
 Public policy URL: https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/
 
-Support contact: SUPPORT_EMAIL_REQUIRED
+Support contact: alexapp.support@gmail.com
 
 WA Schedule is a local-first Android app for scheduling user-created WhatsApp messages.
 
@@ -49,4 +49,4 @@ You can delete stored data by deleting rules/history where available, clearing a
 
 ## Contact
 
-SUPPORT_EMAIL_REQUIRED
+alexapp.support@gmail.com

@@ -20,14 +20,16 @@ Video should show:
 5. Android Accessibility settings screen.
 6. WA Schedule AccessibilityService enabled.
 7. Return to WA Schedule.
-8. Create a new rule with a normal WhatsApp group target.
-9. Enter a non-sensitive user-authored message.
-10. Save the rule.
-11. Dry Run verifies target and does not send.
-12. Test Send or near-future scheduled send sends only to the configured target.
-13. WhatsApp returns to Home/background after success.
-14. WA Schedule history/home shows execution status.
-15. Disable AccessibilityService in Android settings.
+8. Open Settings -> About -> Privacy Policy and show that the public policy opens.
+9. Open Settings -> About -> Support and show the support email action.
+10. Create a new rule with a normal WhatsApp group target.
+11. Enter a non-sensitive user-authored message.
+12. Save the rule.
+13. Dry Run verifies target and does not send.
+14. Test Send or near-future scheduled send sends only to the configured target.
+15. WhatsApp returns to Home/background after success.
+16. WA Schedule history/home shows execution status.
+17. Disable AccessibilityService in Android settings.
 
 Reviewer message:
 

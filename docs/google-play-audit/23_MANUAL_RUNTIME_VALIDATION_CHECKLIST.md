@@ -8,6 +8,8 @@ Use the rebuilt API 36 release artifact. Record logcat for every failure.
 - [ ] First launch does not crash.
 - [ ] Onboarding completes.
 - [ ] Prominent Accessibility disclosure appears before Android settings.
+- [ ] Settings -> About -> Privacy Policy opens `https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/`.
+- [ ] Settings -> About -> Support opens `mailto:alexapp.support@gmail.com` with subject `WA Schedule Support`.
 - [ ] Accessibility enabled.
 - [ ] Accessibility connected after returning to app.
 - [ ] Exact alarm permission denied path shows blocked scheduling state.
@@ -23,7 +25,7 @@ Use the rebuilt API 36 release artifact. Record logcat for every failure.
 - [ ] Multiple times on one rule.
 - [ ] Specific nearest date.
 - [ ] Specific date executes once and does not reschedule after final occurrence.
-- [ ] Multiple dates choose correct next occurrence.
+- [ ] Multiple dates with individual date/time pairs choose correct next occurrence.
 
 After every save:
 

@@ -7,8 +7,8 @@ Release artifacts rebuilt after remediation:
 
 Current release artifact hashes:
 
-- APK SHA-256: `4B0A8B95EE2F7AAD9DC0B963F42B6EF5181DE1894753A7E28FBF473B6F7652C5`
-- AAB SHA-256: `06C2ECB3305082076EC82C004773EC0F5DEF43CDA5A7F1F2443186E80D70C7C4`
+- APK SHA-256: `24c26f4fe1391c5e54622673b4f6200df23d610cea071741517649117dd08197`
+- AAB SHA-256: `b184dac61916919fd87d9580e80452cbccecd0a1f18d49013dddf8891d69e2c0`
 
 Badging after remediation:
 
@@ -40,4 +40,4 @@ Play readiness:
 - APK signature verified: PASS
 - Target SDK requirement: PASS
 - Runtime validation: NOT TESTED
-- Public Privacy Policy URL: PREPARED, pending GitHub Pages deployment verification
+- Public Privacy Policy URL: HTTP 200 verified for `/privacy/` on 2026-09-02; verify again after push/deploy if Pages content changes.

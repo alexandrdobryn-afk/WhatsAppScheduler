@@ -38,4 +38,8 @@ WA Schedule does not share user data with the developer. User-authored messages 
 - Data deletion request mechanism: No account system. Users can delete local data by deleting rules/history, clearing app data, or uninstalling.
 - Independent security review: Not performed.
 
+Final Play Console wording note:
+
+User-authored scheduled content is transferred to WhatsApp only as the explicit, user-directed core action of a saved rule, Dry Run/Test Send path, or scheduled send. It is not sent to the developer, not sent to WA Schedule servers, and should not be represented as developer-side collection or sharing with the developer.
+
 Data Safety status: READY as a draft; final Play Console selections still need manual review against the exact current Console wording.

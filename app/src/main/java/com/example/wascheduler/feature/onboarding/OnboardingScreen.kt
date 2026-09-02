@@ -3,6 +3,7 @@ package com.example.wascheduler.feature.onboarding
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -46,6 +47,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wascheduler.R
+import com.example.wascheduler.core.intents.ExternalIntents
+import com.example.wascheduler.core.intents.startActivityIfAvailable
 import com.example.wascheduler.core.permissions.PermissionChecker
 import com.example.wascheduler.core.permissions.PermissionState
 import com.example.wascheduler.data.repository.SettingsRepository
@@ -182,7 +185,9 @@ fun OnboardingScreen(viewModel: OnboardingViewModel, onContinue: () -> Unit) {
                 Button(
                     onClick = {
                         showAccessibilityDisclosure = false
-                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                        if (!context.startActivityIfAvailable(ExternalIntents.accessibilitySettings())) {
+                            Toast.makeText(context, R.string.accessibility_settings_open_failed, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 ) {
                     Text(stringResource(R.string.accessibility_disclosure_continue))

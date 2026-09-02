@@ -139,6 +139,16 @@
     <string name="settings_notifications_success">Notify on successful send</string>
     <string name="settings_diagnostics">Diagnostics</string>
     <string name="settings_export_report">Export diagnostic report</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_app">App</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_privacy_policy">Privacy Policy</string>
+    <string name="settings_support">Support</string>
+    <string name="settings_contact_support">Contact support</string>
+    <string name="settings_website">Website</string>
+    <string name="settings_open_link_failed">No app is available to open this link.</string>
+    <string name="settings_open_email_failed">No email app is available to contact support.</string>
+    <string name="accessibility_settings_open_failed">Accessibility settings could not be opened.</string>
 
     <string name="diagnostics_title">Diagnostics</string>
     <string name="diagnostics_app_version">App version</string>
@@ -187,8 +197,8 @@
     <string name="onboarding_exact_alarm_description">Required to run schedules at the exact selected time.</string>
     <string name="onboarding_battery_description">Recommended so Android battery limits do not stop background sends.</string>
     <string name="accessibility_disclosure_title">Accessibility use</string>
-    <string name="accessibility_disclosure_body">WA Schedule uses Android Accessibility Service only to perform the actions you configure: open the official WhatsApp app, find the chat or group you specified, enter your prepared message, and press Send at the scheduled time.\n\nWA Schedule does not read or store your conversations.</string>
-    <string name="accessibility_disclosure_continue">I understand and continue</string>
+    <string name="accessibility_disclosure_body">WA Schedule uses Android Accessibility Service to perform WhatsApp actions that you configure.\n\nThe service accesses visible WhatsApp interface elements only to verify the chat or group you selected, find the message field and Send button, enter your saved message, and send it at the scheduled time.\n\nYour saved message is transferred to WhatsApp as part of the action you requested.\n\nWA Schedule does not store your WhatsApp conversation history or send Accessibility data to the developer or to WA Schedule servers.</string>
+    <string name="accessibility_disclosure_continue">Agree and continue</string>
 
     <string name="notification_channel_result">Send result</string>
     <string name="notification_sent_title">Message sent</string>

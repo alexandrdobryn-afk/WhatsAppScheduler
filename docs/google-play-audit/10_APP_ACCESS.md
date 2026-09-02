@@ -21,10 +21,12 @@ Reviewer instructions draft:
 4. Launch WA Schedule and complete onboarding.
 5. Accept the prominent Accessibility disclosure.
 6. Enable WA Schedule in Android Accessibility settings.
-7. Create a rule targeting the test WhatsApp group.
-8. Use Dry Run to verify the target without sending.
-9. Use Test Send or a near-future schedule to verify a real send.
-10. Confirm WA Schedule returns to Home after the send.
+7. Open Settings -> About -> Privacy Policy and verify it opens the public policy URL in a browser.
+8. Open Settings -> About -> Support and verify the mail client opens `alexapp.support@gmail.com`.
+9. Create a rule targeting the test WhatsApp group.
+10. Use Dry Run to verify the target without sending.
+11. Use Test Send or a near-future schedule to verify a real send.
+12. Confirm WA Schedule returns to Home after the send.
 
 Credentials to provide in Play Console:
 

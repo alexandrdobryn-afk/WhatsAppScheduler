@@ -40,6 +40,6 @@ Graphics needed:
 Listing blockers:
 
 - Privacy Policy URL: https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/
-- Need support contact.
+- Support contact: alexapp.support@gmail.com
 - Need real screenshots from the validated build.
 - Need review wording that avoids implying official WhatsApp affiliation.

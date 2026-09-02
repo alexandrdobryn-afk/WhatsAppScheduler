@@ -14,10 +14,10 @@ Before internal testing upload:
 - [x] Remove `flagRetrieveInteractiveWindows`.
 - [x] Prepare public Privacy Policy URL: `https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/`.
 - [x] Correct GitHub Pages publish structure under `docs/site`.
-- [ ] Add a user-visible in-app Privacy Policy link.
-- [ ] Enable GitHub Pages Source = GitHub Actions in repository settings.
-- [ ] Rerun the Pages workflow and verify `/` and `/privacy/` return HTTP 200 after deployment.
-- [ ] Replace `SUPPORT_EMAIL_REQUIRED`.
+- [x] Add a user-visible in-app Privacy Policy link.
+- [x] Add a user-visible Support contact.
+- [x] Replace support placeholder with `alexapp.support@gmail.com`.
+- [x] Verify `/` and `/privacy/` return HTTP 200.
 - [ ] Record Accessibility review video.
 - [ ] Complete App Content forms.
 - [ ] Complete Data Safety form.

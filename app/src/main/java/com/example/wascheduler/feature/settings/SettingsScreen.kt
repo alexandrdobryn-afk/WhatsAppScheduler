@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -45,7 +46,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.wascheduler.BuildConfig
 import com.example.wascheduler.R
+import com.example.wascheduler.core.intents.ExternalIntents
+import com.example.wascheduler.core.intents.ExternalLinks
+import com.example.wascheduler.core.intents.startActivityIfAvailable
 import com.example.wascheduler.core.locale.AppLocaleController
 import com.example.wascheduler.core.permissions.PermissionChecker
 import com.example.wascheduler.core.permissions.PermissionState
@@ -338,6 +343,41 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                     }
                 }
             }
+
+            item {
+                SettingsSection(title = stringResource(R.string.settings_about)) {
+                    SettingsValueRow(stringResource(R.string.settings_about_app), stringResource(R.string.app_name))
+                    SettingsValueRow(stringResource(R.string.settings_version), BuildConfig.VERSION_NAME)
+                    SettingsValueRow(stringResource(R.string.settings_support), ExternalLinks.SUPPORT_EMAIL)
+                    TextButton(
+                        onClick = {
+                            if (!context.startActivityIfAvailable(ExternalIntents.privacyPolicy())) {
+                                Toast.makeText(context, R.string.settings_open_link_failed, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ) {
+                        Text(stringResource(R.string.settings_privacy_policy))
+                    }
+                    TextButton(
+                        onClick = {
+                            if (!context.startActivityIfAvailable(ExternalIntents.supportEmail())) {
+                                Toast.makeText(context, R.string.settings_open_email_failed, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ) {
+                        Text(stringResource(R.string.settings_contact_support))
+                    }
+                    TextButton(
+                        onClick = {
+                            if (!context.startActivityIfAvailable(ExternalIntents.website())) {
+                                Toast.makeText(context, R.string.settings_open_link_failed, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    ) {
+                        Text(stringResource(R.string.settings_website))
+                    }
+                }
+            }
         }
     }
 
@@ -350,7 +390,9 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                 Button(
                     onClick = {
                         showAccessibilityDisclosure = false
-                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                        if (!context.startActivityIfAvailable(ExternalIntents.accessibilitySettings())) {
+                            Toast.makeText(context, R.string.accessibility_settings_open_failed, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 ) {
                     Text(stringResource(R.string.accessibility_disclosure_continue))

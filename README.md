@@ -16,6 +16,10 @@ Privacy Policy:
 
 [https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/](https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/)
 
+Support:
+
+[alexapp.support@gmail.com](mailto:alexapp.support@gmail.com)
+
 Current Android package name:
 
 ```text
@@ -28,12 +32,12 @@ Tested on:
 
 | Area | Status |
 |---|---|
-| Android Emulator | Pixel 8, Android 15 / API 35 reported as tested |
-| APK installation | Passed |
-| Accessibility onboarding | Passed |
-| WhatsApp installation and login | Passed |
+| Android Emulator | Not tested in the current compliance run |
+| APK installation | Not tested in the current compliance run |
+| Accessibility onboarding | Build-verified; runtime not tested in the current compliance run |
+| WhatsApp installation and login | Not tested in the current compliance run |
 | Rule editor | Under active testing |
-| Scheduled end-to-end send | Experimental / not yet fully validated |
+| Scheduled end-to-end send | Not fully validated |
 
 Build verification in this repository:
 
@@ -82,7 +86,7 @@ set is:
 Current APK SHA-256:
 
 ```text
-4B0A8B95EE2F7AAD9DC0B963F42B6EF5181DE1894753A7E28FBF473B6F7652C5
+24c26f4fe1391c5e54622673b4f6200df23d610cea071741517649117dd08197
 ```
 
 Do not use `app-debug.apk` for normal installation. Use the signed release APK.

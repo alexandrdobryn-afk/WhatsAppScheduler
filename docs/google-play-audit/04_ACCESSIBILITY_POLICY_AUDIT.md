@@ -46,6 +46,12 @@ Remaining Play review needs:
 3. Keep the disclosure and declaration aligned with the current consumer-WhatsApp-only scope.
 4. Do not claim WhatsApp Business support unless it is re-added and runtime-tested.
 
+Prominent disclosure state:
+
+- Onboarding opens Android Accessibility settings only after the disclosure dialog affirmative action.
+- Settings opens Android Accessibility settings only after the disclosure dialog affirmative action.
+- English, Russian, and Ukrainian in-app disclosure strings match the declaration meaning.
+
 Accessibility declaration readiness: READY for submission drafting, subject to Google review.
 
 Runtime status: NOT TESTED.

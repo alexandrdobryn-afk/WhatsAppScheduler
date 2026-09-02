@@ -6,6 +6,10 @@ App name: WA Schedule
 
 AccessibilityService name: WA Schedule Accessibility Service
 
+Current app disclosure state:
+
+Settings and onboarding show the prominent Accessibility disclosure before opening Android Accessibility settings. The English, Russian, and Ukrainian resource strings have been updated to match this declaration meaning.
+
 Is the app an accessibility tool?
 
 No. WA Schedule is a productivity automation app. It is not primarily designed as assistive technology for users with disabilities.

@@ -139,6 +139,16 @@
     <string name="settings_notifications_success">Сповіщати про успішне надсилання</string>
     <string name="settings_diagnostics">Діагностика</string>
     <string name="settings_export_report">Експортувати діагностичний звіт</string>
+    <string name="settings_about">Про застосунок</string>
+    <string name="settings_about_app">Застосунок</string>
+    <string name="settings_version">Версія</string>
+    <string name="settings_privacy_policy">Політика конфіденційності</string>
+    <string name="settings_support">Підтримка</string>
+    <string name="settings_contact_support">Зв\'язатися з підтримкою</string>
+    <string name="settings_website">Сайт</string>
+    <string name="settings_open_link_failed">Немає застосунку, який може відкрити це посилання.</string>
+    <string name="settings_open_email_failed">Немає поштового застосунку для звернення до підтримки.</string>
+    <string name="accessibility_settings_open_failed">Не вдалося відкрити налаштування Accessibility.</string>
 
     <string name="diagnostics_title">Діагностика</string>
     <string name="diagnostics_app_version">Версія застосунку</string>
@@ -187,8 +197,8 @@
     <string name="onboarding_exact_alarm_description">Потрібні, щоб запускати розклад точно у вибраний час.</string>
     <string name="onboarding_battery_description">Рекомендовано вимкнути обмеження батареї, щоб фонові надсилання не зупинялися системою.</string>
     <string name="accessibility_disclosure_title">Використання Accessibility</string>
-    <string name="accessibility_disclosure_body">WA Schedule використовує Android Accessibility Service лише для дій, які ви налаштували: відкрити офіційний WhatsApp, знайти вказаний вами чат або групу, ввести заздалегідь підготовлене повідомлення та натиснути Send у запланований час.\n\nWA Schedule не читає і не зберігає вашу переписку.</string>
-    <string name="accessibility_disclosure_continue">Я розумію, продовжити</string>
+    <string name="accessibility_disclosure_body">WA Schedule використовує Android Accessibility Service для виконання дій WhatsApp, які ви налаштували.\n\nСлужба звертається лише до видимих елементів інтерфейсу WhatsApp, щоб перевірити вибраний вами чат або групу, знайти поле повідомлення й кнопку Send, ввести збережене вами повідомлення та надіслати його у запланований час.\n\nВаше збережене повідомлення передається до WhatsApp як частина дії, яку ви запросили.\n\nWA Schedule не зберігає історію ваших переписок WhatsApp і не надсилає дані Accessibility розробнику або на сервери WA Schedule.</string>
+    <string name="accessibility_disclosure_continue">Погодитися і продовжити</string>
 
     <string name="notification_channel_result">Результат надсилання</string>
     <string name="notification_sent_title">Повідомлення надіслано</string>
