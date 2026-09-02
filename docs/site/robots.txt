@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://alexandrdobryn-afk.github.io/WhatsAppScheduler/sitemap.xml

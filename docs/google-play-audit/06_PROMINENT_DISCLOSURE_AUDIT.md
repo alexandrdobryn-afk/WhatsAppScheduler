@@ -14,13 +14,24 @@ Remediation result:
 - It must not mention WhatsApp Business unless support is re-added and tested.
 - It must not imply that data is sent to the developer.
 
-Recommended final disclosure:
+Final disclosure wording prepared for Play review:
 
-WA Schedule uses Android Accessibility permission to operate the official WhatsApp app only for rules you create. When a rule runs, it may inspect the visible WhatsApp screen to verify the selected chat or group, find the message box and send button, enter your saved message, tap Send, and return to Home. WA Schedule does not read your conversation history for developer use, does not collect or sell this data, and does not send it to our servers. Rules, preferences, and history stay on this device unless you manually share a diagnostic report.
+English:
+
+WA Schedule uses Android Accessibility Service to perform WhatsApp actions that you configure. The service accesses visible WhatsApp interface elements only to verify the chat or group you selected, find the message field and Send button, enter your saved message, and send it at the scheduled time. Your saved message is transferred to WhatsApp as part of the action you requested. WA Schedule does not store your WhatsApp conversation history or send Accessibility data to the developer or to WA Schedule servers.
+
+Russian:
+
+WA Schedule использует Android Accessibility Service для выполнения действий WhatsApp, которые вы настраиваете. Сервис обращается только к видимым элементам интерфейса WhatsApp, чтобы проверить выбранный вами чат или группу, найти поле сообщения и кнопку Send, ввести сохранённое вами сообщение и отправить его в запланированное время. Ваше сохранённое сообщение передаётся в WhatsApp как часть действия, которое вы запросили. WA Schedule не сохраняет историю ваших переписок WhatsApp и не отправляет данные Accessibility разработчику или на серверы WA Schedule.
+
+Ukrainian:
+
+WA Schedule використовує Android Accessibility Service для виконання дій WhatsApp, які ви налаштовуєте. Сервіс звертається лише до видимих елементів інтерфейсу WhatsApp, щоб перевірити вибраний вами чат або групу, знайти поле повідомлення і кнопку Send, ввести збережене вами повідомлення та надіслати його у запланований час. Ваше збережене повідомлення передається до WhatsApp як частина дії, яку ви запросили. WA Schedule не зберігає історію ваших переписок WhatsApp і не надсилає дані Accessibility розробнику або на сервери WA Schedule.
 
 Status:
 
 - Placement: PASS
 - Explicit consent: PASS
 - Decline path: PASS
-- Final wording in app resources: NEEDS REVIEW if the exact recommended wording is required before Play upload.
+- Final wording draft: READY.
+- Current app resource strings were checked and are shorter than this final wording. Updating in-app strings should be handled as a separate Android/UI change because this pass does not change product functionality.

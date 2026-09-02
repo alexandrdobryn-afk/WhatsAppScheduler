@@ -9,21 +9,25 @@
     "targetSdk": 36
   },
   "audit": {
-    "date": "2026-08-31",
-    "status": "CONDITIONAL_GO",
-    "uploadReady": "CONDITIONAL",
+    "date": "2026-09-02",
+    "status": "NO_GO_PRIVACY_LINK_REQUIRED",
+    "uploadReady": "BLOCKED",
     "productionReady": false,
     "p0BlockersBefore": 4,
     "p0CodeBlockersAfter": 0,
     "remainingSubmissionPrerequisites": [
+      "IN_APP_PRIVACY_POLICY_LINK_REQUIRED",
       "SUPPORT_EMAIL_REQUIRED",
       "ACCESSIBILITY_REVIEW_VIDEO_REQUIRED",
       "PLAY_CONSOLE_FORMS_REQUIRED",
       "GITHUB_PAGES_SOURCE_GITHUB_ACTIONS_MANUAL_ENABLE_REQUIRED",
+      "PAGES_LANDING_AND_PRIVACY_HTTP_200_VERIFICATION_REQUIRED",
       "PRIVACY_POLICY_PUBLIC_URL_HTTP_200_VERIFICATION_REQUIRED"
     ],
     "accessibilityRisk": "HIGH_BUT_DECLARATION_READY",
-    "runtimeStatus": "NOT_TESTED_NO_ADB_DEVICE"
+    "runtimeStatus": "NOT_TESTED_NO_ADB_DEVICE",
+    "pagesStructure": "READY_DOCS_SITE",
+    "inAppPrivacyPolicyLink": "NOT_FOUND_P0_REQUIREMENT"
   },
   "artifacts": {
     "releaseApk": "app/build/outputs/apk/release/app-release.apk",
@@ -43,6 +47,8 @@
     "aaptBadging": "PASS_TARGET_36_COMPILE_36",
     "mergedManifest": "PASS",
     "adbDevices": "NO_DEVICES",
+    "pagesSiteStructure": "PASS_DOCS_SITE_HAS_INDEX_PRIVACY_ROBOTS_SITEMAP",
+    "inAppPrivacyPolicyLink": "NOT_FOUND",
     "runtimeE2E": "NOT_TESTED",
     "whatsappE2E": "NOT_TESTED",
     "screenOff": "NOT_TESTED",
@@ -81,7 +87,7 @@
     "declarationStatus": "READY"
   },
   "privacy": {
-    "status": "PUBLIC_URL_PREPARED_NEEDS_MANUAL_PAGES_ENABLEMENT_HTTP_200_VERIFICATION_AND_SUPPORT_EMAIL",
+    "status": "PUBLIC_URL_PREPARED_NEEDS_IN_APP_LINK_MANUAL_PAGES_ENABLEMENT_HTTP_200_VERIFICATION_AND_SUPPORT_EMAIL",
     "publicUrl": "https://alexandrdobryn-afk.github.io/WhatsAppScheduler/privacy/",
     "supportPlaceholder": "SUPPORT_EMAIL_REQUIRED",
     "developerSideCollection": false,
@@ -93,11 +99,15 @@
     "status": "READY_NEEDS_PLAY_CONSOLE_REVIEW",
     "developerSideCollection": false,
     "userDirectedTransferToWhatsApp": true,
-    "sharedWithDeveloper": false
+    "sharedWithDeveloper": false,
+    "developerSideCollectionRecommendation": "NO",
+    "sharingRecommendation": "NO",
+    "sharingExplanation": "User-authored messages are transferred to WhatsApp as a user-directed core action covered by the user-created rule and prominent disclosure/consent. This is not developer-side collection or transfer to WA Schedule servers."
   },
   "topActions": [
+    "Add a user-visible in-app Privacy Policy link.",
     "Provide support email or stable support page.",
-    "Enable GitHub Pages Source = GitHub Actions, rerun the Pages workflow, and verify public Privacy Policy URL.",
+    "Enable GitHub Pages Source = GitHub Actions, rerun the Pages workflow, and verify public landing and Privacy Policy URLs.",
     "Record Accessibility review video using consumer WhatsApp only.",
     "Run manual runtime validation checklist on emulator/device.",
     "Upload rebuilt AAB to internal testing after Play Console forms are complete."

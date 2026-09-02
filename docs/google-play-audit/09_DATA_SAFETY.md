@@ -6,7 +6,7 @@ Use this as a Play Console draft. Final answers must match the published Privacy
 
 Does the app collect user data?
 
-Recommended answer for current release: No developer-side collection.
+Current recommendation: Developer-side collection: NO.
 
 Reason:
 
@@ -19,11 +19,11 @@ Reason:
 
 Does the app share user data?
 
-Recommended explanation:
+Current recommendation: Sharing: NO.
 
-WA Schedule does not share user data with the developer. For Test Send and scheduled send, the app transfers the user-authored message into the official WhatsApp app so WhatsApp can send it to the user-selected chat or group. This is a user-directed transfer that is the app's core feature, not developer-side collection.
+Explanation:
 
-Final Play Console answer: NEEDS REVIEW against the exact current Console wording.
+WA Schedule does not share user data with the developer. User-authored messages are transferred to WhatsApp as a user-directed core action, covered by the user-created rule and prominent disclosure/consent. For Test Send and scheduled send, WA Schedule places the saved message into the official WhatsApp app so WhatsApp can send it to the user-selected chat or group. This is not developer-side collection and is not a transfer to WA Schedule servers.
 
 ## Data Types Stored Locally
 
@@ -38,4 +38,4 @@ Final Play Console answer: NEEDS REVIEW against the exact current Console wordin
 - Data deletion request mechanism: No account system. Users can delete local data by deleting rules/history, clearing app data, or uninstalling.
 - Independent security review: Not performed.
 
-Data Safety status: READY as a draft; NEEDS REVIEW in Play Console.
+Data Safety status: READY as a draft; final Play Console selections still need manual review against the exact current Console wording.

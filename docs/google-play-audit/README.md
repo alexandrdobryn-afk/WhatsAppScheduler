@@ -4,7 +4,7 @@ Audit date: 2026-08-31
 
 Scope: WA Schedule Android app, checkout `C:\Users\Admin\Desktop\WhatsAppScheduler\WhatsAppScheduler`.
 
-Status after remediation: CONDITIONAL GO for Play Console preparation/internal testing.
+Status after final documentation fix: NO-GO for Play upload until the in-app Privacy Policy link and manual submission prerequisites are complete.
 
 Production status: NOT READY until real-device/runtime validation is completed.
 
@@ -15,9 +15,10 @@ P0 code blockers after remediation: 0
 Remaining user/submission prerequisites:
 
 1. `SUPPORT_EMAIL_REQUIRED`
-2. Enable GitHub Pages Source = GitHub Actions, rerun the Pages workflow, and verify public Privacy Policy URL HTTP 200.
-3. Accessibility review video must be recorded from the validated build.
-4. Runtime matrix remains `NOT TESTED` because no ADB-visible emulator/device was available.
+2. `IN_APP_PRIVACY_POLICY_LINK_REQUIRED`
+3. Enable GitHub Pages Source = GitHub Actions, rerun the Pages workflow, and verify public landing and Privacy Policy URLs HTTP 200.
+4. Accessibility review video must be recorded from the validated build.
+5. Runtime matrix remains `NOT TESTED` because no ADB-visible emulator/device was available.
 
 Remediated items:
 
@@ -29,6 +30,7 @@ Remediated items:
 - Accessibility package scope narrowed to official consumer WhatsApp only: `com.whatsapp`.
 - `flagRetrieveInteractiveWindows` removed because the automation uses `rootInActiveWindow` and does not need interactive-window enumeration.
 - Privacy Policy text updated with explicit URL/support placeholders and current data/storage behavior.
+- GitHub Pages publish structure corrected under `docs/site`.
 
 Important limitation:
 

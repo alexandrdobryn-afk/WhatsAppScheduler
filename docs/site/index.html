@@ -3,8 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WA Schedule</title>
-  <meta name="description" content="WA Schedule is a local Android app for scheduling user-configured WhatsApp messages.">
+  <title>WA Schedule - Scheduled WhatsApp Messages for Android</title>
+  <meta name="description" content="WA Schedule is a local Android app for scheduling user-configured WhatsApp messages. Google Play distribution is being prepared.">
+  <meta property="og:title" content="WA Schedule - Scheduled WhatsApp Messages for Android">
+  <meta property="og:description" content="Schedule user-configured WhatsApp messages locally on Android.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://alexandrdobryn-afk.github.io/WhatsAppScheduler/">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://alexandrdobryn-afk.github.io/WhatsAppScheduler/">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "WA Schedule",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Android",
+    "softwareVersion": "0.1.5",
+    "description": "Android app for scheduling user-configured WhatsApp actions locally on the user's device. No developer backend, analytics, or advertising SDKs.",
+    "codeRepository": "https://github.com/alexandrdobryn-afk/WhatsAppScheduler",
+    "isAccessibleForFree": true,
+    "author": {
+      "@type": "Person",
+      "name": "Alexandr Dobryn"
+    },
+    "softwareRequirements": "Android 12 or newer"
+  }
+  </script>
   <style>
     :root {
       color-scheme: light;
@@ -23,10 +47,33 @@
       color: var(--text);
       background: var(--bg);
     }
-    main {
-      max-width: 880px;
+    header,
+    main,
+    footer {
+      width: min(980px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 56px 20px;
+    }
+    header {
+      padding: 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 20px;
+      font-weight: 800;
+    }
+    nav {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 14px;
+    }
+    a {
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: none;
     }
     .panel {
       background: var(--panel);
@@ -36,20 +83,21 @@
     }
     h1 {
       margin: 0 0 12px;
-      font-size: clamp(2rem, 4vw, 3rem);
-      line-height: 1.1;
+      font-size: clamp(2.4rem, 6vw, 4.5rem);
+      line-height: 1.04;
       letter-spacing: 0;
     }
     h2 {
-      margin-top: 32px;
-      font-size: 1.25rem;
+      margin: 34px 0 12px;
+      font-size: 1.4rem;
+      letter-spacing: 0;
     }
     p { margin: 0 0 16px; }
     ul { padding-left: 22px; }
-    a { color: var(--accent); font-weight: 700; }
     .lead {
       font-size: 1.18rem;
       color: var(--muted);
+      max-width: 760px;
     }
     .links {
       display: flex;
@@ -62,37 +110,84 @@
       border: 1px solid var(--accent);
       border-radius: 6px;
       padding: 10px 14px;
-      text-decoration: none;
     }
-    .disclaimer {
-      margin-top: 32px;
-      padding-top: 20px;
-      border-top: 1px solid var(--line);
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fbfcfd;
+    }
+    footer {
       color: var(--muted);
-      font-size: 0.95rem;
+      padding: 28px 0 48px;
+      font-size: 14px;
+    }
+    @media (max-width: 720px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .panel {
+        padding: 24px 18px;
+      }
     }
   </style>
 </head>
 <body>
+  <header>
+    <div class="brand">WA Schedule</div>
+    <nav aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#play">Google Play</a>
+      <a href="./privacy/">Privacy Policy</a>
+      <a href="https://github.com/alexandrdobryn-afk/WhatsAppScheduler">GitHub</a>
+    </nav>
+  </header>
+
   <main>
     <section class="panel" aria-labelledby="title">
       <h1 id="title">WA Schedule</h1>
-      <p class="lead">Scheduled WhatsApp messages for Android.</p>
-      <p>WA Schedule is a local Android application for user-configured deterministic schedules on a personal WhatsApp account.</p>
-      <ul>
-        <li>Runs locally on Android.</li>
-        <li>Uses user-configured schedule rules.</li>
-        <li>Works with a personal WhatsApp account.</li>
-        <li>Does not operate a backend server.</li>
-        <li>Does not include analytics or advertising SDKs.</li>
-      </ul>
+      <p class="lead">A local Android app for scheduling user-configured WhatsApp actions at selected times.</p>
+      <p>WA Schedule stores rules on the device, opens the official consumer WhatsApp app for configured actions, and does not operate a developer backend, analytics SDK, or advertising SDK.</p>
       <div class="links" aria-label="Project links">
         <a href="./privacy/">Privacy Policy</a>
         <a href="https://github.com/alexandrdobryn-afk/WhatsAppScheduler">GitHub repository</a>
         <a href="https://github.com/alexandrdobryn-afk/WhatsAppScheduler/releases/latest">Latest release</a>
       </div>
-      <p class="disclaimer">WA Schedule is an independent application and is not affiliated with, endorsed by, or sponsored by WhatsApp LLC or Meta Platforms, Inc.</p>
+    </section>
+
+    <section id="features">
+      <h2>Features</h2>
+      <div class="grid">
+        <div class="card">Create deterministic schedules with target chat or group, message text, dates, weekdays, times, and enabled state.</div>
+        <div class="card">Uses Android scheduling APIs and Accessibility Service for the exact WhatsApp action configured by the user.</div>
+        <div class="card">Keeps schedule data, preferences, and execution history locally on the Android device.</div>
+      </div>
+    </section>
+
+    <section id="play">
+      <h2>Google Play preparation</h2>
+      <p>Google Play distribution is being prepared. The current documentation package includes the Privacy Policy, Accessibility disclosure materials, Data Safety draft, and manual runtime validation checklist required before publication.</p>
+    </section>
+
+    <section id="privacy">
+      <h2>Privacy</h2>
+      <p>WA Schedule does not collect schedule, message, diagnostic, or Accessibility-derived data for the developer. User-authored messages are transferred to WhatsApp only as part of the user-requested send action.</p>
+      <p><a href="./privacy/">Read the Privacy Policy</a></p>
     </section>
   </main>
+
+  <footer>
+    WA Schedule is an independent Android project and is not affiliated with, endorsed by, or sponsored by WhatsApp LLC or Meta Platforms, Inc.
+  </footer>
 </body>
 </html>

@@ -22,12 +22,20 @@
    - After: removed; `rootInActiveWindow` path remains.
    - Status: RESOLVED.
 
+## Newly Confirmed P0 Submission Blocker
+
+1. User-visible Privacy Policy link is not present in the app.
+   - Checked: `SettingsScreen.kt` and app resources.
+   - Current result: no Settings/About Privacy Policy link found.
+   - Required action: add a user-visible Privacy Policy link in a separate Android/UI change, for example Settings -> About -> Privacy Policy.
+   - Status: BLOCKING PLAY SUBMISSION.
+
 ## Remaining Non-Code Submission Prerequisites
 
 1. Provide support email or stable support page.
 2. Record Accessibility review video.
 3. Complete Play Console forms.
-4. Enable GitHub Pages Source = GitHub Actions, rerun the Pages workflow, and verify public Privacy Policy URL after deployment.
+4. Enable GitHub Pages Source = GitHub Actions, rerun the Pages workflow, and verify public landing and Privacy Policy URLs after deployment.
 
 ## Remaining Runtime Risks
 
@@ -39,11 +47,12 @@
 
 ## Recommended Next Order
 
-1. User provides support email.
-2. Enable GitHub Pages Source = GitHub Actions in repository settings.
-3. Rerun the Pages workflow and verify the Privacy Policy URL.
-4. Install release APK/AAB-derived build on Pixel 8 / Android 15 and Android 16 emulator/device.
-5. Execute `23_MANUAL_RUNTIME_VALIDATION_CHECKLIST.md`.
-6. Record Accessibility review video from the same behavior.
-7. Upload AAB to internal testing.
-8. Start closed testing and production access process if required.
+1. Add in-app Privacy Policy link.
+2. User provides support email.
+3. Enable GitHub Pages Source = GitHub Actions in repository settings.
+4. Rerun the Pages workflow and verify `/` and `/privacy/`.
+5. Install release APK/AAB-derived build on Pixel 8 / Android 15 and Android 16 emulator/device.
+6. Execute `23_MANUAL_RUNTIME_VALIDATION_CHECKLIST.md`.
+7. Record Accessibility review video from the same behavior.
+8. Upload AAB to internal testing.
+9. Start closed testing and production access process if required.

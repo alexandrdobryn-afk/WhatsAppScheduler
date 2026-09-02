@@ -32,5 +32,6 @@ Remaining user action:
 
 - Replace `SUPPORT_EMAIL_REQUIRED` with a real support email or stable support page.
 - Enable GitHub Pages Source = GitHub Actions in repository settings, rerun the Pages workflow, and verify HTTP 200 after deployment.
+- Add a user-visible in-app Privacy Policy link, for example Settings -> About -> Privacy Policy. Current app Settings implementation was checked and no Privacy Policy link was found.
 
-Privacy Policy status: PUBLIC URL PREPARED; NEEDS MANUAL PAGES ENABLEMENT, DEPLOYMENT VERIFICATION, AND SUPPORT CONTACT.
+Privacy Policy status: PUBLIC URL PREPARED; NEEDS IN-APP LINK, MANUAL PAGES ENABLEMENT, DEPLOYMENT VERIFICATION, AND SUPPORT CONTACT.
