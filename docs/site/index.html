@@ -123,6 +123,30 @@
       padding: 16px;
       background: #fbfcfd;
     }
+    .screenshots {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 16px;
+    }
+    .screenshot {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    .screenshot img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .screenshot figcaption {
+      padding: 10px 12px 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.35;
+    }
     footer {
       color: var(--muted);
       padding: 28px 0 48px;
@@ -136,6 +160,9 @@
       .grid {
         grid-template-columns: 1fr;
       }
+      .screenshots {
+        grid-template-columns: 1fr;
+      }
       .panel {
         padding: 24px 18px;
       }
@@ -147,6 +174,7 @@
     <div class="brand">WA Schedule</div>
     <nav aria-label="Primary">
       <a href="#features">Features</a>
+      <a href="#screenshots">Screenshots</a>
       <a href="#play">Google Play</a>
       <a href="./privacy/">Privacy Policy</a>
       <a href="https://github.com/alexandrdobryn-afk/WhatsAppScheduler">GitHub</a>
@@ -171,6 +199,36 @@
         <div class="card">Create deterministic schedules with target chat or group, message text, dates, weekdays, times, and enabled state.</div>
         <div class="card">Uses Android scheduling APIs and Accessibility Service for the exact WhatsApp action configured by the user.</div>
         <div class="card">Keeps schedule data, preferences, and execution history locally on the Android device.</div>
+      </div>
+    </section>
+
+    <section id="screenshots">
+      <h2>Screenshots</h2>
+      <div class="screenshots">
+        <figure class="screenshot">
+          <img src="./assets/screenshots/01-create-schedule.png" alt="Create a new schedule in WA Schedule" loading="lazy">
+          <figcaption>Create a new schedule with message, target chat, and date/time settings.</figcaption>
+        </figure>
+        <figure class="screenshot">
+          <img src="./assets/screenshots/02-permissions.png" alt="Permissions checklist in WA Schedule settings" loading="lazy">
+          <figcaption>Review required Android permissions and setup actions in one place.</figcaption>
+        </figure>
+        <figure class="screenshot">
+          <img src="./assets/screenshots/03-time-zone.png" alt="Schedule time zone settings in WA Schedule" loading="lazy">
+          <figcaption>Use the device time zone or choose a specific schedule time zone.</figcaption>
+        </figure>
+        <figure class="screenshot">
+          <img src="./assets/screenshots/04-home.png" alt="Home screen with scheduled rules" loading="lazy">
+          <figcaption>Manage active rules, automation state, and multiple schedule plans.</figcaption>
+        </figure>
+        <figure class="screenshot">
+          <img src="./assets/screenshots/05-support-privacy.png" alt="Support, website, and privacy links in settings" loading="lazy">
+          <figcaption>Open support, website, and Privacy Policy links from app settings.</figcaption>
+        </figure>
+        <figure class="screenshot">
+          <img src="./assets/screenshots/06-edit-dates-times.png" alt="Edit multiple dates and times" loading="lazy">
+          <figcaption>Edit schedule details and multiple date/time pairs.</figcaption>
+        </figure>
       </div>
     </section>
 

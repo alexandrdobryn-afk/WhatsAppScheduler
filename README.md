@@ -52,12 +52,15 @@ Build verification in this repository:
 
 ## Screenshots
 
-Product screenshots are being collected for the public README. The intended
-set is:
+Public screenshots for the current WA Schedule UI:
 
-| Home | Schedule | History | Settings |
-|---|---|---|---|
-| Coming soon | Coming soon | Coming soon | Coming soon |
+| Create schedule | Permissions | Time zone |
+|---|---|---|
+| <img src="docs/site/assets/screenshots/01-create-schedule.png" alt="Create a new schedule in WA Schedule" width="260"> | <img src="docs/site/assets/screenshots/02-permissions.png" alt="Permissions checklist in WA Schedule settings" width="260"> | <img src="docs/site/assets/screenshots/03-time-zone.png" alt="Schedule time zone settings in WA Schedule" width="260"> |
+
+| Home | Support and privacy | Edit dates and times |
+|---|---|---|
+| <img src="docs/site/assets/screenshots/04-home.png" alt="Home screen with scheduled rules" width="260"> | <img src="docs/site/assets/screenshots/05-support-privacy.png" alt="Support, website, and privacy links in settings" width="260"> | <img src="docs/site/assets/screenshots/06-edit-dates-times.png" alt="Edit multiple dates and times" width="260"> |
 
 ## Features
 
