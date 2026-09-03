@@ -124,7 +124,9 @@
     <string name="settings_schedule_timezone">Часовой пояс расписания</string>
     <string name="settings_timezone_device">Использовать часовой пояс устройства</string>
     <string name="settings_timezone_custom">Использовать выбранный часовой пояс</string>
-    <string name="settings_timezone_search">ID часового пояса</string>
+    <string name="settings_timezone_select">Выбрать часовой пояс</string>
+    <string name="settings_timezone_select_title">Выбор часового пояса</string>
+    <string name="settings_timezone_search">Поиск по городу, региону или UTC</string>
     <string name="settings_device_timezone">Часовой пояс устройства</string>
     <string name="settings_schedule_timezone_current">Часовой пояс расписания</string>
     <string name="settings_scheduler_current_time">Текущее время планировщика</string>

@@ -124,7 +124,9 @@
     <string name="settings_schedule_timezone">Schedule time zone</string>
     <string name="settings_timezone_device">Use device time zone</string>
     <string name="settings_timezone_custom">Use selected time zone</string>
-    <string name="settings_timezone_search">Time zone ID</string>
+    <string name="settings_timezone_select">Select time zone</string>
+    <string name="settings_timezone_select_title">Select time zone</string>
+    <string name="settings_timezone_search">Search by city, region, or UTC offset</string>
     <string name="settings_device_timezone">Device time zone</string>
     <string name="settings_schedule_timezone_current">Schedule time zone</string>
     <string name="settings_scheduler_current_time">Scheduler current time</string>

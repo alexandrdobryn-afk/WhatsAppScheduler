@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Accessibility
@@ -167,15 +168,11 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
     val notifyOnSuccess by viewModel.notifyOnSuccess.collectAsState(initial = true)
     val maxRetryAttempts by viewModel.maxRetryAttempts.collectAsState(initial = 3)
     val timeZoneMode by viewModel.timeZoneMode.collectAsState(initial = ScheduleTimeZoneMode.DEVICE)
-    val customTimeZoneId by viewModel.customTimeZoneId.collectAsState(initial = SettingsRepository.DEFAULT_CUSTOM_ZONE_ID)
     val scheduleZoneId by viewModel.scheduleZoneId.collectAsState(initial = ZoneId.systemDefault())
     val permissionState by viewModel.permissionState.collectAsState()
-    var zoneQuery by remember { mutableStateOf(customTimeZoneId) }
+    var showTimeZonePicker by remember { mutableStateOf(false) }
     var showAccessibilityDisclosure by remember { mutableStateOf(false) }
 
-    LaunchedEffect(customTimeZoneId) {
-        zoneQuery = customTimeZoneId
-    }
     LaunchedEffect(Unit) {
         viewModel.refreshPermissions()
     }
@@ -225,36 +222,18 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                     ChoiceRow(
                         ScheduleTimeZoneMode.CUSTOM,
                         timeZoneMode,
-                        R.string.settings_timezone_custom,
-                        viewModel::setTimeZoneMode
-                    )
-                    OutlinedTextField(
-                        value = zoneQuery,
-                        onValueChange = { zoneQuery = it },
-                        label = { Text(stringResource(R.string.settings_timezone_search)) },
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                        singleLine = true,
-                        isError = runCatching { ZoneId.of(zoneQuery) }.isFailure
-                    )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(top = 8.dp)
+                        R.string.settings_timezone_custom
                     ) {
-                        val zones = filteredZones(zoneQuery)
-                        zones.forEach { zone: String ->
-                            FilterChip(
-                                selected = scheduleZoneId.id == zone,
-                                onClick = { viewModel.setCustomTimeZone(zone) },
-                                label = { Text("$zone ${zoneOffsetLabel(zone)}") }
-                            )
-                        }
+                        showTimeZonePicker = true
                     }
-                    if (runCatching { ZoneId.of(zoneQuery) }.isSuccess) {
-                        TextButton(onClick = { viewModel.setCustomTimeZone(zoneQuery) }) {
-                            Text(stringResource(R.string.action_ok))
+                    ActionRow(
+                        icon = Icons.Filled.Public,
+                        label = stringResource(R.string.settings_timezone_select),
+                        value = "${scheduleZoneId.id} · ${TimeZonePickerModel.offsetLabel(scheduleZoneId.id)}",
+                        onClick = {
+                            showTimeZonePicker = true
                         }
-                    }
+                    )
                     SettingsValueRow(stringResource(R.string.settings_device_timezone), ZoneId.systemDefault().id)
                     SettingsValueRow(stringResource(R.string.settings_schedule_timezone_current), scheduleZoneId.id)
                     SettingsValueRow(
@@ -433,6 +412,17 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
             }
         )
     }
+
+    if (showTimeZonePicker) {
+        TimeZonePickerDialog(
+            selectedZoneId = scheduleZoneId.id,
+            onDismiss = { showTimeZonePicker = false },
+            onSelected = { zoneId ->
+                showTimeZonePicker = false
+                viewModel.setCustomTimeZone(zoneId)
+            }
+        )
+    }
 }
 
 @Composable
@@ -452,6 +442,80 @@ private fun SettingsSection(title: String, content: @Composable ColumnScope.() -
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 content()
             }
+        }
+    }
+}
+
+@Composable
+private fun TimeZonePickerDialog(
+    selectedZoneId: String,
+    onDismiss: () -> Unit,
+    onSelected: (String) -> Unit
+) {
+    var query by remember { mutableStateOf("") }
+    val options = remember(query) { TimeZonePickerModel.options(query) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.settings_timezone_select_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    label = { Text(stringResource(R.string.settings_timezone_search)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 420.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    items(options, key = { it.zoneId }) { option ->
+                        TimeZoneOptionRow(
+                            option = option,
+                            selected = option.zoneId == selectedZoneId,
+                            onClick = { onSelected(option.zoneId) }
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+private fun TimeZoneOptionRow(option: TimeZonePickerOption, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = if (selected) "✓" else "",
+            modifier = Modifier.width(24.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                option.zoneId,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                option.offsetLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -578,25 +642,6 @@ private fun StatusPill(ok: Boolean?) {
         )
     }
 }
-
-private fun filteredZones(query: String): List<String> {
-    val preferred = listOf("Europe/Kyiv", "UTC", "Europe/Warsaw", "Europe/Berlin", "Asia/Dubai", "America/New_York")
-    val normalized = query.trim()
-    if (normalized.isBlank()) return preferred
-    return ZoneId.getAvailableZoneIds()
-        .asSequence()
-        .filter { it.contains(normalized, ignoreCase = true) }
-        .sorted()
-        .take(8)
-        .toList()
-        .ifEmpty { preferred.filter { it.contains(normalized, ignoreCase = true) } }
-}
-
-private fun zoneOffsetLabel(zoneId: String): String =
-    runCatching {
-        val offset = ZonedDateTime.now(ZoneId.of(zoneId)).offset.id
-        "UTC$offset"
-    }.getOrDefault("")
 
 private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this

@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.wascheduler.core.logging.LogComponent
+import com.example.wascheduler.core.logging.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -87,13 +89,7 @@ class SettingsRepository @Inject constructor(
             val mode = prefs[Keys.SCHEDULE_TIME_ZONE_MODE]?.let {
                 runCatching { ScheduleTimeZoneMode.valueOf(it) }.getOrNull()
             } ?: ScheduleTimeZoneMode.DEVICE
-            if (mode == ScheduleTimeZoneMode.CUSTOM) {
-                prefs[Keys.CUSTOM_TIME_ZONE_ID]
-                    ?.let { runCatching { ZoneId.of(it) }.getOrNull() }
-                    ?: ZoneId.of(DEFAULT_CUSTOM_ZONE_ID)
-            } else {
-                ZoneId.systemDefault()
-            }
+            resolveScheduleZoneId(mode, prefs[Keys.CUSTOM_TIME_ZONE_ID])
         }
 
     suspend fun setScheduleTimeZoneMode(mode: ScheduleTimeZoneMode) {
@@ -126,3 +122,21 @@ class SettingsRepository @Inject constructor(
         const val DEFAULT_CUSTOM_ZONE_ID = "Europe/Kyiv"
     }
 }
+
+internal fun resolveScheduleZoneId(
+    mode: ScheduleTimeZoneMode,
+    customTimeZoneId: String?,
+    deviceZoneId: ZoneId = ZoneId.systemDefault(),
+    onInvalidCustomZoneId: (String, Throwable) -> Unit = { stored, throwable ->
+        Logger.w(LogComponent.SCHEDULER, "Invalid stored schedule ZoneId '$stored'; falling back to device time zone", throwable)
+    }
+): ZoneId =
+    if (mode == ScheduleTimeZoneMode.CUSTOM) {
+        customTimeZoneId?.let { stored ->
+            runCatching { ZoneId.of(stored) }
+                .onFailure { onInvalidCustomZoneId(stored, it) }
+                .getOrNull()
+        } ?: deviceZoneId
+    } else {
+        deviceZoneId
+    }
