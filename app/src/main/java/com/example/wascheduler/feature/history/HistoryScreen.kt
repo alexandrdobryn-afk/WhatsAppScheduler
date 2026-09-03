@@ -6,17 +6,28 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,8 +39,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -127,18 +142,71 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
 
 @Composable
 private fun ExecutionRow(execution: Execution, onClick: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text("${execution.scheduledAt.toLocalDate()}  ${execution.scheduledAt.toLocalTime()}", style = MaterialTheme.typography.labelLarge)
-            Text(execution.targetChat, style = MaterialTheme.typography.bodyMedium)
-            val statusText = statusSymbol(execution.status) + " " + statusLabel(execution.status)
-            Text(statusText, style = MaterialTheme.typography.bodyMedium)
-            Text("${stringResource(R.string.history_attempt)} ${execution.attemptNumber}", style = MaterialTheme.typography.bodySmall)
-            if (execution.errorCode != null) {
-                Text(execution.errorCode.name, style = MaterialTheme.typography.bodySmall)
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = statusIcon(execution.status),
+                contentDescription = null,
+                tint = statusColor(execution.status),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    "${execution.scheduledAt.toLocalDate()} · ${execution.scheduledAt.toLocalTime()}",
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Text(
+                    execution.targetChat,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                execution.errorCode?.let {
+                    Text(
+                        it.name,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
+            AssistChip(
+                onClick = onClick,
+                label = {
+                    Text(
+                        "${statusLabel(execution.status)} · ${stringResource(R.string.history_attempt)} ${execution.attemptNumber}",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            )
         }
     }
+}
+
+private fun statusIcon(status: ExecutionStatus): ImageVector = when (status) {
+    ExecutionStatus.SENT -> Icons.Filled.CheckCircle
+    ExecutionStatus.FAILED -> Icons.Filled.Error
+    ExecutionStatus.SKIPPED -> Icons.Filled.Warning
+    ExecutionStatus.RUNNING -> Icons.Filled.Schedule
+    ExecutionStatus.SCHEDULED -> Icons.Filled.Schedule
+}
+
+@Composable
+private fun statusColor(status: ExecutionStatus): Color = when (status) {
+    ExecutionStatus.SENT -> MaterialTheme.colorScheme.primary
+    ExecutionStatus.FAILED -> MaterialTheme.colorScheme.error
+    ExecutionStatus.SKIPPED -> MaterialTheme.colorScheme.tertiary
+    ExecutionStatus.RUNNING -> MaterialTheme.colorScheme.secondary
+    ExecutionStatus.SCHEDULED -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
 @Composable
@@ -151,14 +219,6 @@ private fun statusLabel(status: ExecutionStatus): String = stringResource(
         ExecutionStatus.SKIPPED -> R.string.status_skipped
     }
 )
-
-private fun statusSymbol(status: ExecutionStatus): String = when (status) {
-    ExecutionStatus.SENT -> "✓"
-    ExecutionStatus.FAILED -> "✕"
-    ExecutionStatus.SKIPPED -> "–"
-    ExecutionStatus.RUNNING -> "…"
-    ExecutionStatus.SCHEDULED -> "○"
-}
 
 @Composable
 private fun ExecutionDetailsDialog(execution: Execution, onDismiss: () -> Unit) {

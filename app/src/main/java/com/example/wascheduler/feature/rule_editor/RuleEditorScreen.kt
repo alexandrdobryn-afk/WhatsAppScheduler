@@ -5,14 +5,17 @@ import android.app.DatePickerDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,6 +38,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -50,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.wascheduler.R
 import com.example.wascheduler.core.accessibility.AutomationResult
@@ -156,168 +161,156 @@ fun RuleEditorScreen(viewModel: RuleEditorViewModel, onDone: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-                OutlinedTextField(
-                    value = state.name,
-                    onValueChange = viewModel::updateName,
-                    label = { Text(stringResource(R.string.rule_editor_name)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            item {
-                OutlinedTextField(
-                    value = state.chatName,
-                    onValueChange = viewModel::updateChatName,
-                    label = { Text(stringResource(R.string.rule_editor_group)) },
-                    isError = state.validationErrors.contains(RuleEditorValidationError.CHAT_REQUIRED),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            item {
-                OutlinedTextField(
-                    value = state.message,
-                    onValueChange = viewModel::updateMessage,
-                    label = { Text(stringResource(R.string.rule_editor_message)) },
-                    isError = state.validationErrors.contains(RuleEditorValidationError.MESSAGE_REQUIRED),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            item {
-                Text(stringResource(R.string.rule_editor_schedule_type), style = MaterialTheme.typography.labelLarge)
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    ScheduleType.entries.forEach { type ->
-                        FilterChip(
-                            selected = state.scheduleType == type,
-                            onClick = { viewModel.updateScheduleType(type) },
-                            label = { Text(stringResource(type.labelRes)) }
-                        )
-                    }
-                }
-            }
-
-            item {
-                when (state.scheduleType) {
-                    ScheduleType.WEEKLY -> WeeklyDateSection(state, viewModel)
-                    ScheduleType.SPECIFIC_DATE -> SpecificDateSection(state, viewModel)
-                    ScheduleType.MULTIPLE_DATES -> MultipleDatesSection(state, viewModel)
-                }
-            }
-
-            if (state.scheduleType != ScheduleType.MULTIPLE_DATES) {
-                item {
-                    Text(stringResource(R.string.rule_editor_times), style = MaterialTheme.typography.labelLarge)
-                    LazyRow {
-                        items(state.times) { time ->
-                            AssistChip(
-                                onClick = { viewModel.removeTime(time) },
-                                label = { Text("$time  ×") },
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-                        }
-                    }
-                    OutlinedButton(onClick = {
-                        val now = LocalTime.now()
-                        TimePickerDialog(context, { _, hour, minute ->
-                            viewModel.addTime(LocalTime.of(hour, minute))
-                        }, now.hour, now.minute, true).show()
-                    }) { Text(stringResource(R.string.rule_editor_add_time)) }
-                }
-            }
-
-            item {
-                if (state.scheduleType == ScheduleType.WEEKLY) {
-                    Text(stringResource(R.string.rule_editor_repeat), style = MaterialTheme.typography.labelLarge)
-                    FlowRow(
+                EditorSection(title = stringResource(R.string.rule_editor_message)) {
+                    OutlinedTextField(
+                        value = state.name,
+                        onValueChange = viewModel::updateName,
+                        label = { Text(stringResource(R.string.rule_editor_name)) },
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        DayOfWeek.entries.forEach { day ->
-                            FilterChip(
-                                selected = day in state.days,
-                                onClick = { viewModel.toggleDay(day) },
-                                label = { Text(dayLabels[day]?.let { stringResource(it) } ?: day.name.take(2)) }
-                            )
-                        }
-                    }
-                    FlowRow(
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = state.chatName,
+                        onValueChange = viewModel::updateChatName,
+                        label = { Text(stringResource(R.string.rule_editor_group)) },
+                        isError = state.validationErrors.contains(RuleEditorValidationError.CHAT_REQUIRED),
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.EVERY_DAY) }) {
-                            Text(stringResource(R.string.rule_editor_preset_every_day))
-                        }
-                        TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.WEEKDAYS) }) {
-                            Text(stringResource(R.string.rule_editor_preset_weekdays))
-                        }
-                        TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.WEEKENDS) }) {
-                            Text(stringResource(R.string.rule_editor_preset_weekends))
-                        }
-                    }
-                }
-            }
-
-            item {
-                Text(
-                    stringResource(R.string.rule_editor_delay) + ": ${state.allowedDelayMinutes}",
-                    style = MaterialTheme.typography.labelLarge
-                )
-                Slider(
-                    value = state.allowedDelayMinutes.toFloat(),
-                    onValueChange = { viewModel.updateAllowedDelay(it.toInt()) },
-                    valueRange = 0f..120f
-                )
-            }
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(stringResource(R.string.rule_editor_active), style = MaterialTheme.typography.titleMedium)
-                    Switch(checked = state.enabled, onCheckedChange = viewModel::updateEnabled)
-                }
-            }
-
-            item {
-                OutlinedButton(
-                    onClick = viewModel::runDryRun,
-                    enabled = !state.actionInProgress && state.chatName.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth()
-                ) { Text(stringResource(R.string.rule_editor_dry_run)) }
-            }
-            item {
-                OutlinedButton(
-                    onClick = viewModel::requestTestSendPreview,
-                    enabled = !state.actionInProgress && state.chatName.isNotBlank() && state.message.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth()
-                ) { Text(stringResource(R.string.rule_editor_test_send)) }
-            }
-
-            state.lastActionResult?.let { result ->
-                item {
-                    Text(
-                        when (result) {
-                            is AutomationResult.Success -> stringResource(R.string.dry_run_ready)
-                            is AutomationResult.Failure -> stringResource(
-                                context.resources.getIdentifier(result.errorCode.stringResKey, "string", context.packageName)
-                                    .takeIf { it != 0 } ?: R.string.error_UNKNOWN_ERROR
-                            )
-                        }
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = state.message,
+                        onValueChange = viewModel::updateMessage,
+                        label = { Text(stringResource(R.string.rule_editor_message)) },
+                        isError = state.validationErrors.contains(RuleEditorValidationError.MESSAGE_REQUIRED),
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
+            item {
+                EditorSection(title = stringResource(R.string.rule_editor_schedule_type)) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        ScheduleType.entries.forEach { type ->
+                            FilterChip(
+                                selected = state.scheduleType == type,
+                                onClick = { viewModel.updateScheduleType(type) },
+                                label = { Text(stringResource(type.labelRes)) }
+                            )
+                        }
+                    }
 
-            if (!state.isNew) {
-                item {
-                    OutlinedButton(onClick = viewModel::requestDelete, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.rule_editor_delete))
+                    when (state.scheduleType) {
+                        ScheduleType.WEEKLY -> WeeklyDateSection(state, viewModel)
+                        ScheduleType.SPECIFIC_DATE -> SpecificDateSection(state, viewModel)
+                        ScheduleType.MULTIPLE_DATES -> MultipleDatesSection(state, viewModel)
+                    }
+
+                    if (state.scheduleType != ScheduleType.MULTIPLE_DATES) {
+                        Text(stringResource(R.string.rule_editor_times), style = MaterialTheme.typography.labelLarge)
+                        LazyRow {
+                            items(state.times) { time ->
+                                AssistChip(
+                                    onClick = { viewModel.removeTime(time) },
+                                    label = { Text("$time  ×") },
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                            }
+                        }
+                        OutlinedButton(onClick = {
+                            val now = LocalTime.now()
+                            TimePickerDialog(context, { _, hour, minute ->
+                                viewModel.addTime(LocalTime.of(hour, minute))
+                            }, now.hour, now.minute, true).show()
+                        }) { Text(stringResource(R.string.rule_editor_add_time)) }
+                    }
+
+                    if (state.scheduleType == ScheduleType.WEEKLY) {
+                        Text(stringResource(R.string.rule_editor_repeat), style = MaterialTheme.typography.labelLarge)
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            DayOfWeek.entries.forEach { day ->
+                                FilterChip(
+                                    selected = day in state.days,
+                                    onClick = { viewModel.toggleDay(day) },
+                                    label = { Text(dayLabels[day]?.let { stringResource(it) } ?: day.name.take(2)) }
+                                )
+                            }
+                        }
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.EVERY_DAY) }) {
+                                Text(stringResource(R.string.rule_editor_preset_every_day))
+                            }
+                            TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.WEEKDAYS) }) {
+                                Text(stringResource(R.string.rule_editor_preset_weekdays))
+                            }
+                            TextButton(onClick = { viewModel.applyPreset(DayOfWeekPresets.WEEKENDS) }) {
+                                Text(stringResource(R.string.rule_editor_preset_weekends))
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                EditorSection(title = stringResource(R.string.settings_automation)) {
+                    Text(
+                        stringResource(R.string.rule_editor_delay) + ": ${state.allowedDelayMinutes}",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    Slider(
+                        value = state.allowedDelayMinutes.toFloat(),
+                        onValueChange = { viewModel.updateAllowedDelay(it.toInt()) },
+                        valueRange = 0f..120f
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(stringResource(R.string.rule_editor_active), style = MaterialTheme.typography.titleMedium)
+                        Switch(checked = state.enabled, onCheckedChange = viewModel::updateEnabled)
+                    }
+                    OutlinedButton(
+                        onClick = viewModel::runDryRun,
+                        enabled = !state.actionInProgress && state.chatName.isNotBlank(),
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text(stringResource(R.string.rule_editor_dry_run)) }
+                    OutlinedButton(
+                        onClick = viewModel::requestTestSendPreview,
+                        enabled = !state.actionInProgress && state.chatName.isNotBlank() && state.message.isNotBlank(),
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text(stringResource(R.string.rule_editor_test_send)) }
+                    state.lastActionResult?.let { result ->
+                        Text(
+                            when (result) {
+                                is AutomationResult.Success -> stringResource(R.string.dry_run_ready)
+                                is AutomationResult.Failure -> stringResource(
+                                    context.resources.getIdentifier(result.errorCode.stringResKey, "string", context.packageName)
+                                        .takeIf { it != 0 } ?: R.string.error_UNKNOWN_ERROR
+                                )
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (result is AutomationResult.Success) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            }
+                        )
+                    }
+                    if (!state.isNew) {
+                        OutlinedButton(onClick = viewModel::requestDelete, modifier = Modifier.fillMaxWidth()) {
+                            Text(stringResource(R.string.rule_editor_delete))
+                        }
                     }
                 }
             }
@@ -422,17 +415,32 @@ private fun SpecificDateSection(state: RuleEditorState, viewModel: RuleEditorVie
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 private fun MultipleDatesSection(state: RuleEditorState, viewModel: RuleEditorViewModel) {
     val context = LocalContext.current
     val pickerBase = state.dateTimes.lastOrNull()?.date ?: state.dates.lastOrNull() ?: LocalDate.now()
     Text(stringResource(R.string.rule_editor_date_times), style = MaterialTheme.typography.labelLarge)
-    LazyRow {
-        items(state.dateTimes) { selection ->
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        state.dateTimes.take(6).forEach { selection ->
             AssistChip(
                 onClick = { viewModel.removeDateTime(selection) },
-                label = { Text("${selection.date.format(startDateFormatter)} · ${selection.time}  ×") },
+                label = {
+                    Text(
+                        "${selection.date.format(startDateFormatter)} · ${selection.time}  ×",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 modifier = Modifier.padding(end = 8.dp)
             )
+        }
+        val hidden = state.dateTimes.size - 6
+        if (hidden > 0) {
+            AssistChip(onClick = {}, label = { Text("+$hidden") })
         }
     }
     OutlinedButton(onClick = {
@@ -451,6 +459,27 @@ private fun MultipleDatesSection(state: RuleEditorState, viewModel: RuleEditorVi
 private fun DateButton(date: LocalDate, onClick: () -> Unit) {
     OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Text(date.format(startDateFormatter))
+    }
+}
+
+@Composable
+private fun EditorSection(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                title,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+            content()
+        }
     }
 }
 

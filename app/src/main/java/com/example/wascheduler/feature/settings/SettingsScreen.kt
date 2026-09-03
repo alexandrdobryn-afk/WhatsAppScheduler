@@ -8,6 +8,8 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -16,18 +18,32 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Accessibility
+import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.BatterySaver
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,8 +57,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -169,16 +188,12 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
         ) {
             item {
                 SettingsSection(title = stringResource(R.string.settings_general)) {
-                    Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleSmall)
+                    SubsectionLabel(stringResource(R.string.settings_theme))
                     ChoiceRow(AppTheme.SYSTEM, theme, R.string.settings_theme_system, viewModel::setTheme)
                     ChoiceRow(AppTheme.LIGHT, theme, R.string.settings_theme_light, viewModel::setTheme)
                     ChoiceRow(AppTheme.DARK, theme, R.string.settings_theme_dark, viewModel::setTheme)
 
-                    Text(
-                        stringResource(R.string.settings_language),
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(top = 12.dp)
-                    )
+                    SubsectionLabel(stringResource(R.string.settings_language), modifier = Modifier.padding(top = 8.dp))
                     ChoiceRow(AppLanguage.SYSTEM, language, R.string.settings_language_system) { selected ->
                         viewModel.setLanguage(selected)
                         context.findActivity()?.recreate()
@@ -200,7 +215,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
 
             item {
                 SettingsSection(title = stringResource(R.string.settings_schedule)) {
-                    Text(stringResource(R.string.settings_schedule_timezone), style = MaterialTheme.typography.titleSmall)
+                    SubsectionLabel(stringResource(R.string.settings_schedule_timezone))
                     ChoiceRow(
                         ScheduleTimeZoneMode.DEVICE,
                         timeZoneMode,
@@ -255,21 +270,17 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(stringResource(R.string.home_global_switch), modifier = Modifier.weight(1f))
+                        SettingsLabel(stringResource(R.string.home_global_switch), modifier = Modifier.weight(1f))
                         Switch(checked = globalAutomationEnabled, onCheckedChange = viewModel::setGlobalAutomationEnabled)
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(stringResource(R.string.settings_notifications_success), modifier = Modifier.weight(1f))
+                        SettingsLabel(stringResource(R.string.settings_notifications_success), modifier = Modifier.weight(1f))
                         Switch(checked = notifyOnSuccess, onCheckedChange = viewModel::setNotifyOnSuccess)
                     }
-                    Text(
-                        stringResource(R.string.settings_retry_attempts),
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(top = 12.dp)
-                    )
+                    SubsectionLabel(stringResource(R.string.settings_retry_attempts), modifier = Modifier.padding(top = 8.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         val retryChoices = listOf(
                             0 to R.string.retry_0,
@@ -301,14 +312,20 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                     PermissionRow(stringResource(R.string.settings_background_usage), permissionState?.batteryUnrestricted)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { showAccessibilityDisclosure = true }) {
+                            Icon(Icons.Filled.Accessibility, contentDescription = null, modifier = Modifier.size(18.dp))
+                            androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.onboarding_step_accessibility_title))
                         }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             OutlinedButton(onClick = { context.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)) }) {
+                                Icon(Icons.Filled.Alarm, contentDescription = null, modifier = Modifier.size(18.dp))
+                                androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
                                 Text(stringResource(R.string.onboarding_step_exact_alarm_title))
                             }
                         }
                         OutlinedButton(onClick = { context.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }) {
+                            Icon(Icons.Filled.BatterySaver, contentDescription = null, modifier = Modifier.size(18.dp))
+                            androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.onboarding_step_battery_title))
                         }
                         OutlinedButton(
@@ -320,6 +337,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                                 )
                             }
                         ) {
+                            Icon(Icons.Filled.Security, contentDescription = null, modifier = Modifier.size(18.dp))
+                            androidx.compose.foundation.layout.Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.settings_app_permissions))
                         }
                     }
@@ -335,12 +354,12 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
 
             item {
                 SettingsSection(title = stringResource(R.string.diagnostics_title)) {
-                    TextButton(onClick = onOpenDiagnostics) {
-                        Text(stringResource(R.string.settings_diagnostics))
-                    }
-                    TextButton(onClick = onOpenDiagnostics) {
-                        Text(stringResource(R.string.settings_export_report))
-                    }
+                    ActionRow(
+                        icon = Icons.Filled.BugReport,
+                        label = stringResource(R.string.settings_diagnostics),
+                        value = stringResource(R.string.settings_export_report),
+                        onClick = onOpenDiagnostics
+                    )
                 }
             }
 
@@ -349,33 +368,36 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
                     SettingsValueRow(stringResource(R.string.settings_about_app), stringResource(R.string.app_name))
                     SettingsValueRow(stringResource(R.string.settings_version), BuildConfig.VERSION_NAME)
                     SettingsValueRow(stringResource(R.string.settings_support), ExternalLinks.SUPPORT_EMAIL)
-                    TextButton(
+                    ActionRow(
+                        icon = Icons.Filled.PrivacyTip,
+                        label = stringResource(R.string.settings_privacy_policy),
+                        value = ExternalLinks.PRIVACY_POLICY_URL,
                         onClick = {
                             if (!context.startActivityIfAvailable(ExternalIntents.privacyPolicy())) {
                                 Toast.makeText(context, R.string.settings_open_link_failed, Toast.LENGTH_SHORT).show()
                             }
                         }
-                    ) {
-                        Text(stringResource(R.string.settings_privacy_policy))
-                    }
-                    TextButton(
+                    )
+                    ActionRow(
+                        icon = Icons.Filled.SupportAgent,
+                        label = stringResource(R.string.settings_contact_support),
+                        value = ExternalLinks.SUPPORT_EMAIL,
                         onClick = {
                             if (!context.startActivityIfAvailable(ExternalIntents.supportEmail())) {
                                 Toast.makeText(context, R.string.settings_open_email_failed, Toast.LENGTH_SHORT).show()
                             }
                         }
-                    ) {
-                        Text(stringResource(R.string.settings_contact_support))
-                    }
-                    TextButton(
+                    )
+                    ActionRow(
+                        icon = Icons.Filled.Public,
+                        label = stringResource(R.string.settings_website),
+                        value = ExternalLinks.WEBSITE_URL,
                         onClick = {
                             if (!context.startActivityIfAvailable(ExternalIntents.website())) {
                                 Toast.makeText(context, R.string.settings_open_link_failed, Toast.LENGTH_SHORT).show()
                             }
                         }
-                    ) {
-                        Text(stringResource(R.string.settings_website))
-                    }
+                    )
                 }
             }
         }
@@ -385,7 +407,13 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
         AlertDialog(
             onDismissRequest = { showAccessibilityDisclosure = false },
             title = { Text(stringResource(R.string.accessibility_disclosure_title)) },
-            text = { Text(stringResource(R.string.accessibility_disclosure_body)) },
+            text = {
+                Text(
+                    text = stringResource(R.string.accessibility_disclosure_body),
+                    modifier = Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
             confirmButton = {
                 Button(
                     onClick = {
@@ -409,40 +437,146 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
 
 @Composable
 private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            content()
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            title,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surfaceContainerLow
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubsectionLabel(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        modifier = modifier,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.onSurface
+    )
+}
+
+@Composable
+private fun SettingsLabel(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        modifier = modifier,
+        style = MaterialTheme.typography.bodyLarge,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
+    )
+}
+
+@Composable
+private fun SettingsSubLabel(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant
+) {
+    if (text.isNotBlank()) {
+        Text(
+            text = text,
+            modifier = modifier,
+            style = MaterialTheme.typography.bodySmall,
+            color = color,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun ActionRow(icon: ImageVector, label: String, value: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp), tint = MaterialTheme.colorScheme.primary)
+        androidx.compose.foundation.layout.Spacer(Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            SettingsLabel(label)
+            SettingsSubLabel(value)
         }
     }
 }
 
 @Composable
 private fun <T> ChoiceRow(value: T, current: T, labelRes: Int, onSelected: (T) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onSelected(value) }
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         RadioButton(selected = value == current, onClick = { onSelected(value) })
-        Text(stringResource(labelRes), modifier = Modifier.padding(start = 4.dp))
+        SettingsLabel(stringResource(labelRes), modifier = Modifier.padding(start = 4.dp))
     }
 }
 
 @Composable
 private fun SettingsValueRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label)
-        Text(value, style = MaterialTheme.typography.bodyMedium)
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
+    ) {
+        SettingsLabel(label, modifier = Modifier.weight(1f).padding(end = 12.dp))
+        SettingsSubLabel(value, modifier = Modifier.weight(1f))
     }
 }
 
 @Composable
 private fun PermissionRow(label: String, ok: Boolean?) {
-    SettingsValueRow(
-        label = label,
-        value = when (ok) {
-            true -> stringResource(R.string.status_ok)
-            false -> stringResource(R.string.status_attention)
-            null -> stringResource(R.string.status_unknown)
-        }
-    )
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SettingsLabel(label, modifier = Modifier.weight(1f).padding(end = 12.dp))
+        StatusPill(ok)
+    }
+}
+
+@Composable
+private fun StatusPill(ok: Boolean?) {
+    val text = when (ok) {
+        true -> "✓ ${stringResource(R.string.status_ok)}"
+        false -> stringResource(R.string.status_attention)
+        null -> stringResource(R.string.status_unknown)
+    }
+    val container = when (ok) {
+        true -> MaterialTheme.colorScheme.primaryContainer
+        false -> MaterialTheme.colorScheme.errorContainer
+        null -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    val content = when (ok) {
+        true -> MaterialTheme.colorScheme.onPrimaryContainer
+        false -> MaterialTheme.colorScheme.onErrorContainer
+        null -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Surface(shape = MaterialTheme.shapes.small, color = container) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = content,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            maxLines = 1
+        )
+    }
 }
 
 private fun filteredZones(query: String): List<String> {

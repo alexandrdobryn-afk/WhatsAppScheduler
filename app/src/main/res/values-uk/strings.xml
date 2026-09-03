@@ -16,6 +16,9 @@
     <string name="home_last_operation">Остання операція</string>
     <string name="home_system_ok">Автоматизація працює</string>
     <string name="home_system_needs_setup">Потрібне налаштування</string>
+    <string name="home_automation_active">Активно</string>
+    <string name="home_today">Сьогодні</string>
+    <string name="home_tomorrow">Завтра</string>
     <string name="rule_days_every_day">Щодня</string>
     <string name="rule_days_weekdays">Пн–Пт</string>
     <string name="rule_days_weekends">Вихідні</string>

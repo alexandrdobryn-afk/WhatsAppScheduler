@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -20,17 +22,22 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -42,8 +49,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.wascheduler.R
 import com.example.wascheduler.domain.model.DayOfWeekPresets
@@ -51,6 +60,7 @@ import com.example.wascheduler.domain.model.Rule
 import com.example.wascheduler.domain.model.ScheduleType
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val summaryDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
@@ -78,20 +88,21 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item { SystemStatusCard(state) }
-            item { GlobalSwitchCard(state.globalEnabled, viewModel::setGlobalEnabled) }
             item { NextMessageCard(state) }
+            item { GlobalSwitchCard(state.globalEnabled, viewModel::setGlobalEnabled) }
+            item {
+                FilledTonalButton(onClick = onAddSchedule, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Filled.Add, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.home_add_schedule))
+                }
+            }
             items(state.rules, key = { it.id }) { rule ->
                 RuleSummaryCard(rule, onClick = { onEditRule(rule.id) }, onToggle = { enabled ->
                     viewModel.setRuleEnabled(rule.id, enabled)
                 }, onEdit = { onEditRule(rule.id) }, onDuplicate = {
                     viewModel.duplicateRule(rule.id, onEditRule)
                 }, onDelete = { pendingDeleteRule = rule })
-            }
-            item {
-                Button(onClick = onAddSchedule, modifier = Modifier.fillMaxWidth()) {
-                    Icon(Icons.Filled.Add, contentDescription = null)
-                    Text(" " + stringResource(R.string.home_add_schedule))
-                }
             }
             item { LastOperationCard(state) }
         }
@@ -125,20 +136,26 @@ fun HomeScreen(
 @Composable
 private fun SystemStatusCard(state: HomeUiState) {
     val ok = state.permissionState?.allCriticalGranted == true && state.globalEnabled
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = if (ok) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
+    ) {
         Row(
             modifier = Modifier.padding(16.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = if (ok) Icons.Filled.CheckCircle else Icons.Filled.Warning,
                 contentDescription = null,
-                tint = if (ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                tint = if (ok) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.size(22.dp)
             )
-            Spacer(Modifier.height(0.dp))
+            Spacer(Modifier.width(12.dp))
             Text(
                 text = if (ok) stringResource(R.string.home_system_ok) else stringResource(R.string.home_system_needs_setup),
-                modifier = Modifier.padding(start = 8.dp)
+                style = MaterialTheme.typography.titleSmall,
+                color = if (ok) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
             )
         }
     }
@@ -146,13 +163,25 @@ private fun SystemStatusCard(state: HomeUiState) {
 
 @Composable
 private fun GlobalSwitchCard(enabled: Boolean, onChange: (Boolean) -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+    ) {
         Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(stringResource(R.string.home_global_switch), style = MaterialTheme.typography.titleMedium)
+            Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(stringResource(R.string.home_global_switch), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = stringResource(if (enabled) R.string.home_automation_active else R.string.action_disable),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Switch(checked = enabled, onCheckedChange = onChange)
         }
     }
@@ -160,18 +189,39 @@ private fun GlobalSwitchCard(enabled: Boolean, onChange: (Boolean) -> Unit) {
 
 @Composable
 private fun NextMessageCard(state: HomeUiState) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(stringResource(R.string.home_next_message), style = MaterialTheme.typography.labelLarge)
-            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.home_next_message),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(8.dp))
             val next = state.nextOccurrence
             if (next == null) {
-                Text(stringResource(R.string.home_no_scheduled))
+                Text(
+                    stringResource(R.string.home_no_scheduled),
+                    style = MaterialTheme.typography.titleMedium
+                )
             } else {
-                Text("${next.zonedDateTime.toLocalDate()} ${next.ruleTime.localTime}", style = MaterialTheme.typography.headlineSmall)
-                Text(state.scheduleZoneId.id, style = MaterialTheme.typography.bodySmall)
-                Text(next.rule.chatName, style = MaterialTheme.typography.bodyMedium)
-                Text("\"${next.rule.message}\"", style = MaterialTheme.typography.bodySmall)
+                Text(next.ruleTime.localTime.toString(), style = MaterialTheme.typography.displaySmall)
+                Text(
+                    "${friendlyDate(next.zonedDateTime.toLocalDate())} · ${state.scheduleZoneId.id}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(next.rule.chatName, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    next.rule.message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
@@ -188,68 +238,96 @@ private fun RuleSummaryCard(
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
-    Card(
+    ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                Text(rule.name.ifBlank { rule.chatName }, style = MaterialTheme.typography.titleMedium)
-                Text(rule.chatName, style = MaterialTheme.typography.bodySmall)
-                Text("\"${rule.message}\"", style = MaterialTheme.typography.bodySmall)
-                Text(scheduleSummary(rule), style = MaterialTheme.typography.bodySmall)
-                val times = timeSummary(rule)
-                Text(times, style = MaterialTheme.typography.bodySmall)
-            }
-            Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                    Text(
+                        rule.name.ifBlank { rule.chatName },
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        rule.chatName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(
                         Icons.Filled.MoreVert,
                         contentDescription = stringResource(R.string.action_more)
                     )
                 }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_edit)) },
-                        leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
-                        onClick = {
-                            menuExpanded = false
-                            onEdit()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(if (rule.enabled) R.string.action_disable else R.string.action_enable)) },
-                        onClick = {
-                            menuExpanded = false
-                            onToggle(!rule.enabled)
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_duplicate)) },
-                        leadingIcon = { Icon(Icons.Filled.ContentCopy, contentDescription = null) },
-                        onClick = {
-                            menuExpanded = false
-                            onDuplicate()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_delete)) },
-                        leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-                        onClick = {
-                            menuExpanded = false
-                            onDelete()
-                        }
-                    )
-                }
+            }
+            Text(
+                rule.message,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                scheduleSummary(rule),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AssistChip(onClick = onClick, label = { Text(timeSummary(rule), maxLines = 1, overflow = TextOverflow.Ellipsis) })
                 Switch(checked = rule.enabled, onCheckedChange = onToggle)
+            }
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.action_edit)) },
+                    leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
+                    onClick = {
+                        menuExpanded = false
+                        onEdit()
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(if (rule.enabled) R.string.action_disable else R.string.action_enable)) },
+                    onClick = {
+                        menuExpanded = false
+                        onToggle(!rule.enabled)
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.action_duplicate)) },
+                    leadingIcon = { Icon(Icons.Filled.ContentCopy, contentDescription = null) },
+                    onClick = {
+                        menuExpanded = false
+                        onDuplicate()
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.action_delete)) },
+                    leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                    onClick = {
+                        menuExpanded = false
+                        onDelete()
+                    }
+                )
             }
         }
     }
@@ -282,10 +360,12 @@ private fun scheduleSummary(rule: Rule): String =
 
 private fun timeSummary(rule: Rule): String =
     if (rule.scheduleType == ScheduleType.MULTIPLE_DATES) {
-        rule.times.joinToString("  ") { time ->
+        val visible = rule.times.take(3).joinToString("  ") { time ->
             val date = time.localDate?.format(summaryDateFormatter) ?: "?"
             "$date · ${time.localTime}"
         }
+        val hidden = rule.times.size - 3
+        if (hidden > 0) "$visible  +$hidden" else visible
     } else {
         rule.times.joinToString("  ") { it.localTime.toString() }
     }
@@ -304,12 +384,29 @@ private val DayOfWeek.shortLabelRes: Int
 @Composable
 private fun LastOperationCard(state: HomeUiState) {
     val last = state.lastOperation ?: return
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(stringResource(R.string.home_last_operation), style = MaterialTheme.typography.labelLarge)
-            Text("${last.scheduledAt.toLocalTime()} · ${last.targetChat}")
-            Text("\"${last.messagePreview}\"")
-            Text(last.status.name)
+            Text(
+                stringResource(R.string.home_last_operation),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text("${last.scheduledAt.toLocalTime()} · ${last.targetChat}", style = MaterialTheme.typography.titleSmall)
+            Text(last.messagePreview, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(last.status.name, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+    }
+}
+
+@Composable
+private fun friendlyDate(date: LocalDate): String {
+    val today = LocalDate.now()
+    return when (date) {
+        today -> stringResource(R.string.home_today)
+        today.plusDays(1) -> stringResource(R.string.home_tomorrow)
+        else -> date.format(summaryDateFormatter)
     }
 }

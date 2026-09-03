@@ -16,6 +16,9 @@
     <string name="home_last_operation">Last operation</string>
     <string name="home_system_ok">Automation is working</string>
     <string name="home_system_needs_setup">Setup required</string>
+    <string name="home_automation_active">Active</string>
+    <string name="home_today">Today</string>
+    <string name="home_tomorrow">Tomorrow</string>
     <string name="rule_days_every_day">Every day</string>
     <string name="rule_days_weekdays">Mon-Fri</string>
     <string name="rule_days_weekends">Weekends</string>
