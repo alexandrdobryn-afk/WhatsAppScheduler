@@ -9,6 +9,9 @@ import com.example.wascheduler.core.logging.Logger
 import com.example.wascheduler.domain.model.ErrorCode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 /** Explicit states per spec section 65 — no single giant onAccessibilityEvent handler. */
 enum class AutomationState {
@@ -16,7 +19,13 @@ enum class AutomationState {
     FINDING_INPUT, SETTING_TEXT, FINDING_SEND_BUTTON, SENDING, VERIFYING, CLEANUP, SUCCESS, FAILED
 }
 
-data class AutomationTask(val chatName: String, val message: String)
+data class AutomationTask(
+    val chatName: String,
+    val message: String,
+    val scheduledAt: LocalDateTime? = null,
+    val allowedDelayMinutes: Int? = null,
+    val scheduleZoneId: ZoneId? = null
+)
 
 sealed class AutomationResult {
     data object Success : AutomationResult()
@@ -43,7 +52,10 @@ private object Timeouts {
 class AutomationStateMachine(
     private val service: AccessibilityService,
     private val adapter: WhatsAppUiAdapter,
-    private val whatsAppPackage: String
+    private val whatsAppPackage: String,
+    private val nowProvider: (ZoneId) -> LocalDateTime = { zoneId ->
+        ZonedDateTime.now(zoneId).toLocalDateTime()
+    }
 ) {
     var state: AutomationState = AutomationState.IDLE
         private set
@@ -79,15 +91,21 @@ class AutomationStateMachine(
         if (!setText(inputNode, task.message)) return fail(ErrorCode.SET_TEXT_FAILED)
 
         state = AutomationState.FINDING_SEND_BUTTON
-        val sendButton = withTimeoutOrNull(Timeouts.SEND_MS) { pollFor { root -> adapter.findSendButton(root) } }
-        if (sendButton == null) return fail(ErrorCode.SEND_BUTTON_NOT_FOUND)
+        val sendButton = when (val guardedButton = runFinalSendGuard(task)) {
+            is FinalSendButton.Ready -> guardedButton.node
+            is FinalSendButton.Blocked -> return fail(guardedButton.errorCode)
+        }
 
         state = AutomationState.SENDING
+        Logger.i(LogComponent.ACCESSIBILITY, "Send action attempted")
         if (!clickSend(sendButton)) return fail(ErrorCode.CLICK_SEND_FAILED)
 
         state = AutomationState.VERIFYING
         val sendConfirmed = withTimeoutOrNull(Timeouts.SEND_MS) { verifySendPerformed(task.message) } ?: false
-        if (!sendConfirmed) return fail(ErrorCode.AUTOMATION_TIMEOUT)
+        if (!sendConfirmed) {
+            Logger.w(LogComponent.ACCESSIBILITY, "Send result unknown; automatic retry must be blocked")
+            return fail(ErrorCode.SEND_RESULT_UNKNOWN)
+        }
 
         state = AutomationState.SUCCESS
         return AutomationResult.Success
@@ -234,6 +252,62 @@ class AutomationStateMachine(
 
     private fun clickSend(node: AccessibilityNodeInfo): Boolean =
         node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+
+    private sealed class FinalSendButton {
+        data class Ready(val node: AccessibilityNodeInfo) : FinalSendButton()
+        data class Blocked(val errorCode: ErrorCode) : FinalSendButton()
+    }
+
+    private suspend fun runFinalSendGuard(task: AutomationTask): FinalSendButton {
+        val result = withTimeoutOrNull<FinalSendButton>(Timeouts.SEND_MS) {
+            while (true) {
+                val root = currentRoot()
+                if (root != null) {
+                    if (root.packageName?.toString() != whatsAppPackage) {
+                        Logger.w(LogComponent.ACCESSIBILITY, "Final send guard FAIL: ${ErrorCode.UNKNOWN_UI_STATE}")
+                        return@withTimeoutOrNull FinalSendButton.Blocked(ErrorCode.UNKNOWN_UI_STATE)
+                    }
+                    val inputNode = adapter.findMessageInput(root)
+                    if (inputNode == null) {
+                        Logger.w(LogComponent.ACCESSIBILITY, "Final send guard FAIL: ${ErrorCode.INPUT_NOT_FOUND}")
+                        return@withTimeoutOrNull FinalSendButton.Blocked(ErrorCode.INPUT_NOT_FOUND)
+                    }
+                    val sendButton = adapter.findSendButton(root)
+                    val decision = FinalSendGuard.evaluate(
+                        FinalSendGuardInput(
+                            activePackageName = root.packageName?.toString(),
+                            expectedPackageName = whatsAppPackage,
+                            actualChatTitle = adapter.readOpenChatTitle(root),
+                            expectedChatTitle = task.chatName,
+                            inputText = inputNode.text?.toString(),
+                            expectedMessage = task.message,
+                            sendButtonPresent = sendButton != null,
+                            state = state,
+                            scheduledAt = task.scheduledAt,
+                            allowedDelayMinutes = task.allowedDelayMinutes,
+                            now = task.scheduleZoneId?.let(nowProvider)
+                        )
+                    )
+                    when (decision) {
+                        FinalSendGuardDecision.Allow -> {
+                            Logger.i(LogComponent.ACCESSIBILITY, "Final send guard PASS")
+                            return@withTimeoutOrNull FinalSendButton.Ready(sendButton!!)
+                        }
+                        is FinalSendGuardDecision.Block -> {
+                            if (decision.errorCode != ErrorCode.SEND_BUTTON_NOT_FOUND) {
+                                Logger.w(LogComponent.ACCESSIBILITY, "Final send guard FAIL: ${decision.errorCode}")
+                                return@withTimeoutOrNull FinalSendButton.Blocked(decision.errorCode)
+                            }
+                        }
+                    }
+                }
+                delay(Timeouts.POLL_INTERVAL_MS)
+            }
+            @Suppress("UNREACHABLE_CODE")
+            FinalSendButton.Blocked(ErrorCode.SEND_BUTTON_NOT_FOUND)
+        }
+        return result ?: FinalSendButton.Blocked(ErrorCode.SEND_BUTTON_NOT_FOUND)
+    }
 
     private suspend fun verifySendPerformed(sentText: String): Boolean {
         // Best-effort signal only (spec section 33): the input field returning to

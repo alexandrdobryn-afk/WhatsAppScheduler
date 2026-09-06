@@ -5,13 +5,13 @@ Manifest permissions after remediation:
 - `android.permission.SCHEDULE_EXACT_ALARM`
 - `android.permission.RECEIVE_BOOT_COMPLETED`
 - `android.permission.POST_NOTIFICATIONS`
-- `android.permission.FOREGROUND_SERVICE`
 - `android.permission.WAKE_LOCK`
 - `android.permission.ACCESS_NETWORK_STATE`
 
 Removed:
 
 - `android.permission.USE_EXACT_ALARM`
+- `android.permission.FOREGROUND_SERVICE`
 
 Permissions not found:
 
@@ -36,7 +36,7 @@ Permission assessment:
 | `USE_EXACT_ALARM` | Removed | PASS. Restricted Play policy risk removed. |
 | `RECEIVE_BOOT_COMPLETED` | Present | Restores schedule after reboot. |
 | `POST_NOTIFICATIONS` | Present | Used for local status notifications. |
-| `FOREGROUND_SERVICE` | Present | Plausible for execution/status support. Runtime behavior still needs device validation. |
+| `FOREGROUND_SERVICE` | Removed | PASS. No `startForeground`, `startForegroundService`, `ForegroundInfo`, `setForeground`, `setForegroundAsync`, or foreground service runtime path is used. |
 | `WAKE_LOCK` | Present | Used with explicit timeout during scheduled send preparation. |
 | `ACCESS_NETWORK_STATE` | Present | Used for connectivity precheck; no `INTERNET` permission is declared. |
 

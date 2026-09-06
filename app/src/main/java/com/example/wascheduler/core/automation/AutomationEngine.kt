@@ -19,6 +19,7 @@ import com.example.wascheduler.domain.model.ExecutionStatus
 import com.example.wascheduler.domain.model.OccurrenceId
 import com.example.wascheduler.domain.model.Rule
 import com.example.wascheduler.domain.repository.ExecutionRepository
+import com.example.wascheduler.domain.repository.RuleRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import java.time.Duration
@@ -45,6 +46,7 @@ sealed class EngineOutcome {
 class AutomationEngine @Inject constructor(
     @ApplicationContext private val context: Context,
     private val executionRepository: ExecutionRepository,
+    private val ruleRepository: RuleRepository,
     private val permissionChecker: PermissionChecker,
     private val settingsRepository: SettingsRepository,
     private val retryPolicy: RetryPolicy,
@@ -55,31 +57,52 @@ class AutomationEngine @Inject constructor(
 
     suspend fun execute(rule: Rule, scheduledAt: LocalDateTime, attemptNumber: Int = 1): EngineOutcome {
         val occurrenceId = OccurrenceId(rule.id, scheduledAt).toString()
+        val currentRule = ruleRepository.getRule(rule.id)
+        val globalAutomationEnabled = settingsRepository.globalAutomationEnabled.first()
+        val executableRule = when (
+            val decision = RuleExecutionRevalidator.revalidate(
+                snapshot = rule,
+                current = currentRule,
+                scheduledAt = scheduledAt,
+                globalAutomationEnabled = globalAutomationEnabled
+            )
+        ) {
+            is RuleRevalidationDecision.UseCurrentRule -> decision.rule
+            is RuleRevalidationDecision.Skip -> {
+                Logger.i(
+                    LogComponent.EXECUTION,
+                    "Rule revalidation skipped occurrence ruleId=${rule.id} error=${decision.errorCode?.name ?: "GLOBAL_DISABLED"}"
+                )
+                recordTerminal(
+                    occurrenceId,
+                    decision.ruleForHistory,
+                    scheduledAt,
+                    attemptNumber,
+                    ExecutionStatus.SKIPPED,
+                    decision.errorCode
+                )
+                return EngineOutcome.Skipped
+            }
+        }
         val scheduleZoneId = scheduleTimeZoneProvider.currentZoneId()
         val nowInScheduleZone = ZonedDateTime.now(scheduleZoneId).toLocalDateTime()
 
-        if (!settingsRepository.globalAutomationEnabled.first()) {
-            Logger.i(LogComponent.EXECUTION, "Global automation disabled — skipping occurrence")
-            recordTerminal(occurrenceId, rule, scheduledAt, attemptNumber, ExecutionStatus.SKIPPED, null)
-            return EngineOutcome.Skipped
-        }
-
-        val allowedDelay = rule.allowedDelayMinutes.toLong()
+        val allowedDelay = executableRule.allowedDelayMinutes.toLong()
         val minutesLate = Duration.between(scheduledAt, nowInScheduleZone).toMinutes()
         if (minutesLate > allowedDelay) {
-            recordTerminal(occurrenceId, rule, scheduledAt, attemptNumber, ExecutionStatus.SKIPPED, ErrorCode.MISSED_WINDOW)
+            recordTerminal(occurrenceId, executableRule, scheduledAt, attemptNumber, ExecutionStatus.SKIPPED, ErrorCode.MISSED_WINDOW)
             return EngineOutcome.Skipped
         }
 
         val claimCandidate = Execution(
             occurrenceId = occurrenceId,
-            ruleId = rule.id,
+            ruleId = executableRule.id,
             scheduledAt = scheduledAt,
             startedAt = nowInScheduleZone,
             status = ExecutionStatus.RUNNING,
             attemptNumber = attemptNumber,
-            targetChat = rule.chatName,
-            messagePreview = rule.message.take(80)
+            targetChat = executableRule.chatName,
+            messagePreview = executableRule.message.take(80)
         )
         val claimed = executionRepository.tryClaim(claimCandidate)
         if (!claimed) {
@@ -90,12 +113,12 @@ class AutomationEngine @Inject constructor(
         val devicePreparation = deviceWakeController.prepareForScheduledSend()
         try {
             if (devicePreparation.errorCode != null) {
-                return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, devicePreparation.errorCode)
+                return finishWithFailure(occurrenceId, executableRule, scheduledAt, attemptNumber, devicePreparation.errorCode)
             }
 
             val precheckError = runPrechecks()
             if (precheckError != null) {
-                return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, precheckError)
+                return finishWithFailure(occurrenceId, executableRule, scheduledAt, attemptNumber, precheckError)
             }
 
             val service = WhatsAppAccessibilityService.awaitConnected(
@@ -108,24 +131,33 @@ class AutomationEngine @Inject constructor(
                 } else {
                     ErrorCode.ACCESSIBILITY_DISABLED
                 }
-                return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, error)
+                return finishWithFailure(occurrenceId, executableRule, scheduledAt, attemptNumber, error)
             }
 
             val whatsAppPackage = permissionChecker.installedWhatsAppPackage()
             if (whatsAppPackage == null) {
-                return finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, ErrorCode.WHATSAPP_NOT_INSTALLED)
+                return finishWithFailure(occurrenceId, executableRule, scheduledAt, attemptNumber, ErrorCode.WHATSAPP_NOT_INSTALLED)
             }
 
-            val result = service.runAutomation(AutomationTask(rule.chatName, rule.message), whatsAppPackage)
+            val result = service.runAutomation(
+                AutomationTask(
+                    chatName = executableRule.chatName,
+                    message = executableRule.message,
+                    scheduledAt = scheduledAt,
+                    allowedDelayMinutes = executableRule.allowedDelayMinutes,
+                    scheduleZoneId = scheduleZoneId
+                ),
+                whatsAppPackage
+            )
             return when (result) {
                 is AutomationResult.Success -> {
-                    recordTerminal(occurrenceId, rule, scheduledAt, attemptNumber, ExecutionStatus.SENT, null)
+                    recordTerminal(occurrenceId, executableRule, scheduledAt, attemptNumber, ExecutionStatus.SENT, null)
                     if (settingsRepository.notifyOnSuccess.first()) {
-                        notificationHelper.notifySent(rule.chatName, scheduledAt.toLocalTime().toString())
+                        notificationHelper.notifySent(executableRule.chatName, scheduledAt.toLocalTime().toString())
                     }
                     EngineOutcome.Sent
                 }
-                is AutomationResult.Failure -> finishWithFailure(occurrenceId, rule, scheduledAt, attemptNumber, result.errorCode)
+                is AutomationResult.Failure -> finishWithFailure(occurrenceId, executableRule, scheduledAt, attemptNumber, result.errorCode)
             }
         } finally {
             devicePreparation.session.close()
@@ -140,6 +172,9 @@ class AutomationEngine @Inject constructor(
         errorCode: ErrorCode
     ): EngineOutcome {
         val willRetry = retryPolicy.isRecoverable(errorCode) && retryPolicy.hasMoreAttempts(attemptNumber)
+        if (errorCode == ErrorCode.SEND_RESULT_UNKNOWN && !willRetry) {
+            Logger.w(LogComponent.EXECUTION, "Automatic retry blocked after possible Send")
+        }
         recordTerminal(occurrenceId, rule, scheduledAt, attemptNumber, status = ExecutionStatus.FAILED, errorCode = errorCode)
         // Error notifications stay on regardless of the success-notification
         // preference (spec section 55: "errors желательно оставлять включёнными").

@@ -2,8 +2,8 @@
   "app": {
     "name": "WA Schedule",
     "applicationId": "io.github.alexandrdobryn.waschedule",
-    "versionCode": 6,
-    "versionName": "0.1.5",
+    "versionCode": 7,
+    "versionName": "0.1.6",
     "minSdk": 31,
     "compileSdk": 36,
     "targetSdk": 36
@@ -29,8 +29,8 @@
   "artifacts": {
     "releaseApk": "app/build/outputs/apk/release/app-release.apk",
     "releaseAab": "app/build/outputs/bundle/release/app-release.aab",
-    "releaseApkSha256": "24c26f4fe1391c5e54622673b4f6200df23d610cea071741517649117dd08197",
-    "releaseAabSha256": "b184dac61916919fd87d9580e80452cbccecd0a1f18d49013dddf8891d69e2c0",
+    "releaseApkSha256": "ff88a30d9f41c9f9a2191c8208f403ad76d38bc21fd99475a680dec764d903f6",
+    "releaseAabSha256": "6e15d1e82d3e8f48c972acca199ef427b8eb93c2b76bc406755f0de8e1cdcf2a",
     "apkSignature": "PASS_V2",
     "aabSignature": "PASS_JARSIGNER_WITH_WARNINGS"
   },
@@ -60,12 +60,12 @@
       "android.permission.SCHEDULE_EXACT_ALARM",
       "android.permission.RECEIVE_BOOT_COMPLETED",
       "android.permission.POST_NOTIFICATIONS",
-      "android.permission.FOREGROUND_SERVICE",
       "android.permission.WAKE_LOCK",
       "android.permission.ACCESS_NETWORK_STATE"
     ],
     "removed": [
-      "android.permission.USE_EXACT_ALARM"
+      "android.permission.USE_EXACT_ALARM",
+      "android.permission.FOREGROUND_SERVICE"
     ],
     "internetDeclared": false,
     "queryAllPackagesDeclared": false,

@@ -177,7 +177,7 @@ WA Schedule — локальный Android-планировщик для авт�
 
 ## For Developers
 
-- Android Gradle Plugin: 8.5.2
+- Android Gradle Plugin: 8.10.1
 - Kotlin: 1.9.24
 - JDK: 17
 - minSdk: 31

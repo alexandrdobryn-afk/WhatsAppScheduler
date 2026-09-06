@@ -125,8 +125,8 @@ class SettingsViewModel @Inject constructor(
     fun setTheme(theme: AppTheme) = viewModelScope.launch { settingsRepository.setTheme(theme) }
 
     fun setLanguage(language: AppLanguage) = viewModelScope.launch {
-        AppLocaleController.apply(context, language)
         settingsRepository.setLanguage(language)
+        AppLocaleController.apply(context, language)
     }
 
     fun setNotifyOnSuccess(enabled: Boolean) = viewModelScope.launch {

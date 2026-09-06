@@ -11,6 +11,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.wascheduler.core.logging.LogComponent
 import com.example.wascheduler.core.logging.Logger
+import com.example.wascheduler.core.scheduler.AlarmScheduler
 import com.example.wascheduler.domain.repository.RuleRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -57,24 +58,45 @@ class RetryWorker @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val ruleRepository: RuleRepository,
     private val automationEngine: AutomationEngine,
-    private val retryScheduler: RetryScheduler
+    private val retryScheduler: RetryScheduler,
+    private val alarmScheduler: AlarmScheduler
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val ruleId = inputData.getLong(KEY_RULE_ID, -1L)
-        val scheduledAtRaw = inputData.getString(KEY_SCHEDULED_AT)
-        val attempt = inputData.getInt(KEY_ATTEMPT, 2)
-        if (ruleId < 0 || scheduledAtRaw == null) return Result.failure()
+        var result = Result.success()
+        try {
+            val ruleId = inputData.getLong(KEY_RULE_ID, -1L)
+            val scheduledAtRaw = inputData.getString(KEY_SCHEDULED_AT)
+            val attempt = inputData.getInt(KEY_ATTEMPT, 2)
+            if (ruleId < 0 || scheduledAtRaw == null) {
+                result = Result.failure()
+            } else {
+                val rule = ruleRepository.getRule(ruleId)
+                val scheduledAt = runCatching { LocalDateTime.parse(scheduledAtRaw) }.getOrNull()
 
-        val rule = ruleRepository.getRule(ruleId) ?: return Result.failure()
-        if (!rule.enabled) return Result.success()
-
-        val scheduledAt = runCatching { LocalDateTime.parse(scheduledAtRaw) }.getOrNull() ?: return Result.failure()
-
-        val outcome = automationEngine.execute(rule, scheduledAt, attemptNumber = attempt)
-        if (outcome is EngineOutcome.Failed && outcome.willRetry) {
-            retryScheduler.scheduleRetry(ruleId, scheduledAt, nextAttempt = attempt + 1)
+                when {
+                    rule == null || scheduledAt == null -> result = Result.failure()
+                    !rule.enabled -> result = Result.success()
+                    else -> {
+                        val outcome = automationEngine.execute(rule, scheduledAt, attemptNumber = attempt)
+                        if (outcome is EngineOutcome.Failed && outcome.willRetry) {
+                            retryScheduler.scheduleRetry(ruleId, scheduledAt, nextAttempt = attempt + 1)
+                        }
+                    }
+                }
+            }
+        } catch (throwable: Throwable) {
+            Logger.e(LogComponent.EXECUTION, "RetryWorker failed", throwable)
+            result = Result.failure()
+        } finally {
+            val rescheduled = runCatching { alarmScheduler.rescheduleNext() }
+            rescheduled
+                .onSuccess { Logger.i(LogComponent.SCHEDULER, "rescheduleNext PASS after RetryWorker") }
+                .onFailure { throwable ->
+                    Logger.e(LogComponent.SCHEDULER, "rescheduleNext FAIL after RetryWorker", throwable)
+                    result = Result.failure()
+                }
         }
-        return Result.success()
+        return result
     }
 }

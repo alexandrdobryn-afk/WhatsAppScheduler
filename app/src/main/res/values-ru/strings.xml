@@ -223,9 +223,13 @@
     <string name="error_SEND_BUTTON_NOT_FOUND">Кнопка отправки не найдена</string>
     <string name="error_SET_TEXT_FAILED">Не удалось ввести текст</string>
     <string name="error_CLICK_SEND_FAILED">Не удалось нажать кнопку отправки</string>
+    <string name="error_INPUT_MISMATCH">Поле ввода не содержит ожидаемое сообщение</string>
+    <string name="error_SEND_RESULT_UNKNOWN">Сообщение могло быть отправлено. Автоповтор остановлен, чтобы не создать дубликат.</string>
     <string name="error_AUTOMATION_TIMEOUT">Превышено время ожидания</string>
     <string name="error_MISSED_WINDOW">Пропущено допустимое окно отправки</string>
     <string name="error_DUPLICATE_EXECUTION">Уже выполняется/выполнено</string>
+    <string name="error_RULE_NOT_ACTIVE">Расписание больше не активно</string>
+    <string name="error_STALE_RULE_OCCURRENCE">Расписание изменилось перед выполнением</string>
     <string name="error_NO_NETWORK">Нет подключения к сети</string>
     <string name="error_UNKNOWN_UI_STATE">Неизвестный экран WhatsApp</string>
     <string name="error_UNKNOWN_ERROR">Неизвестная ошибка</string>

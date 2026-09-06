@@ -3,6 +3,7 @@ package com.example.wascheduler.core.accessibility
 import android.accessibilityservice.AccessibilityService
 import android.os.Process
 import android.view.accessibility.AccessibilityEvent
+import com.example.wascheduler.core.automation.WhatsAppOperationCoordinator
 import com.example.wascheduler.core.logging.LogComponent
 import com.example.wascheduler.core.logging.Logger
 import com.example.wascheduler.core.permissions.WhatsAppPackages
@@ -48,6 +49,7 @@ data class AccessibilityConnectionSnapshot(
 class WhatsAppAccessibilityService : AccessibilityService() {
 
     @Inject lateinit var adapter: WhatsAppUiAdapter
+    @Inject lateinit var operationCoordinator: WhatsAppOperationCoordinator
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var pendingCompletion: CompletableDeferred<Unit>? = null
@@ -82,18 +84,24 @@ class WhatsAppAccessibilityService : AccessibilityService() {
 
     /** Runs one automation attempt for [task] against [whatsAppPackage] and returns its result. */
     suspend fun runAutomation(task: AutomationTask, whatsAppPackage: String): AutomationResult {
-        val machine = AutomationStateMachine(this, adapter, whatsAppPackage)
-        return machine.run(task)
+        return operationCoordinator.runExclusive("automation") {
+            val machine = AutomationStateMachine(this, adapter, whatsAppPackage)
+            machine.run(task)
+        }
     }
 
     suspend fun runDryRun(chatName: String, whatsAppPackage: String): AutomationResult {
-        val machine = AutomationStateMachine(this, adapter, whatsAppPackage)
-        return machine.runDryRun(chatName)
+        return operationCoordinator.runExclusive("dry_run") {
+            val machine = AutomationStateMachine(this, adapter, whatsAppPackage)
+            machine.runDryRun(chatName)
+        }
     }
 
     suspend fun runCompatibilityProbe(whatsAppPackage: String): AutomationResult {
-        val machine = AutomationStateMachine(this, adapter, whatsAppPackage)
-        return machine.runCompatibilityProbe()
+        return operationCoordinator.runExclusive("compatibility_probe") {
+            val machine = AutomationStateMachine(this, adapter, whatsAppPackage)
+            machine.runCompatibilityProbe()
+        }
     }
 
     companion object {

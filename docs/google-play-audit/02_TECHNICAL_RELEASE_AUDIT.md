@@ -6,8 +6,8 @@ Core Android configuration after remediation:
 
 - Application id: `io.github.alexandrdobryn.waschedule`
 - Namespace: `com.example.wascheduler`
-- Version code: `6`
-- Version name: `0.1.5`
+- Version code: `7`
+- Version name: `0.1.6`
 - Min SDK: `31`
 - Compile SDK: `36`
 - Target SDK: `36`

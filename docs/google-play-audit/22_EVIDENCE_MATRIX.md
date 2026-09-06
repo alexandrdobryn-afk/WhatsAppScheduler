@@ -11,7 +11,7 @@
 | Release AAB | `:app:bundleRelease` | PASS |
 | Debug androidTest compile | `:app:compileDebugAndroidTestKotlin` | PASS |
 | Package identity | `io.github.alexandrdobryn.waschedule` | PASS |
-| Version | `versionCode=6`, `versionName=0.1.5` | PASS |
+| Version | `versionCode=7`, `versionName=0.1.6` | PASS |
 | APK signature | `apksigner verify --verbose --print-certs` | PASS |
 | AAB signature | `jarsigner -verify -certs` reports `jar verified` | PASS with warnings |
 | Merged manifest exact alarm | `SCHEDULE_EXACT_ALARM` present | PASS |

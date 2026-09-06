@@ -45,8 +45,10 @@ class RetryPolicyTest {
         assertTrue(policy.isRecoverable(ErrorCode.DEVICE_LOCKED))
         assertTrue(policy.isRecoverable(ErrorCode.ACCESSIBILITY_NOT_CONNECTED))
         assertTrue(policy.isRecoverable(ErrorCode.NO_NETWORK))
+        assertTrue(policy.isRecoverable(ErrorCode.AUTOMATION_TIMEOUT))
         assertFalse(policy.isRecoverable(ErrorCode.CHAT_NOT_FOUND))
         assertFalse(policy.isRecoverable(ErrorCode.AMBIGUOUS_CHAT))
         assertFalse(policy.isRecoverable(ErrorCode.WRONG_CHAT))
+        assertFalse(policy.isRecoverable(ErrorCode.SEND_RESULT_UNKNOWN))
     }
 }

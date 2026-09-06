@@ -40,26 +40,38 @@ class ExecutionWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         Logger.i(LogComponent.EXECUTION, "ExecutionWorker started")
-        val rules = ruleRepository.getAllEnabledRules()
-        val scheduleZoneId = scheduleTimeZoneProvider.currentZoneId()
-        val due = collectDueOccurrences.collect(rules, scheduleZoneId)
+        var result = Result.success()
+        try {
+            val rules = ruleRepository.getAllEnabledRules()
+            val scheduleZoneId = scheduleTimeZoneProvider.currentZoneId()
+            val due = collectDueOccurrences.collect(rules, scheduleZoneId)
 
-        val unclaimedDue = due.filterNot { occurrence ->
-            executionRepository.hasTerminalOrRunning(
-                OccurrenceId(occurrence.rule.id, occurrence.scheduledAt).toString()
-            )
-        }
-
-        unclaimedDue.forEachIndexed { index, occurrence ->
-            if (index > 0) delay(SEQUENTIAL_SPACING_MS)
-            val outcome = automationEngine.execute(occurrence.rule, occurrence.scheduledAt, attemptNumber = 1)
-            if (outcome is EngineOutcome.Failed && outcome.willRetry) {
-                retryScheduler.scheduleRetry(occurrence.rule.id, occurrence.scheduledAt, nextAttempt = 2)
+            val unclaimedDue = due.filterNot { occurrence ->
+                executionRepository.hasTerminalOrRunning(
+                    OccurrenceId(occurrence.rule.id, occurrence.scheduledAt).toString()
+                )
             }
-        }
 
-        alarmScheduler.rescheduleNext()
-        return Result.success()
+            unclaimedDue.forEachIndexed { index, occurrence ->
+                if (index > 0) delay(SEQUENTIAL_SPACING_MS)
+                val outcome = automationEngine.execute(occurrence.rule, occurrence.scheduledAt, attemptNumber = 1)
+                if (outcome is EngineOutcome.Failed && outcome.willRetry) {
+                    retryScheduler.scheduleRetry(occurrence.rule.id, occurrence.scheduledAt, nextAttempt = 2)
+                }
+            }
+        } catch (throwable: Throwable) {
+            Logger.e(LogComponent.EXECUTION, "ExecutionWorker failed", throwable)
+            result = Result.failure()
+        } finally {
+            val rescheduled = runCatching { alarmScheduler.rescheduleNext() }
+            rescheduled
+                .onSuccess { Logger.i(LogComponent.SCHEDULER, "rescheduleNext PASS after ExecutionWorker") }
+                .onFailure { throwable ->
+                    Logger.e(LogComponent.SCHEDULER, "rescheduleNext FAIL after ExecutionWorker", throwable)
+                    result = Result.failure()
+                }
+        }
+        return result
     }
 
     companion object {

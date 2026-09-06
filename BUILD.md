@@ -2,8 +2,8 @@
 
 ## Требования
 
-- Android Studio Ladybug (2024.2) или новее, либо командная строка с JDK 17 и Android SDK.
-- Android SDK Platform 35, Build-Tools совместимые с AGP 8.5.2.
+- Android Studio Meerkat (2024.3.1 Patch 1) или новее, либо командная строка с JDK 17 и Android SDK.
+- Android SDK Platform 36, Build-Tools совместимые с AGP 8.10.1.
 - Установленный на тестовом устройстве официальный WhatsApp (`com.whatsapp` или `com.whatsapp.w4b`).
 
 ## Первая сборка в Android Studio

@@ -223,9 +223,13 @@
     <string name="error_SEND_BUTTON_NOT_FOUND">Send button not found</string>
     <string name="error_SET_TEXT_FAILED">Could not enter text</string>
     <string name="error_CLICK_SEND_FAILED">Could not tap send</string>
+    <string name="error_INPUT_MISMATCH">Message field does not contain the expected message</string>
+    <string name="error_SEND_RESULT_UNKNOWN">Message may have been sent. Automatic retry was stopped to prevent a duplicate.</string>
     <string name="error_AUTOMATION_TIMEOUT">Operation timed out</string>
     <string name="error_MISSED_WINDOW">Allowed send window was missed</string>
     <string name="error_DUPLICATE_EXECUTION">Already running/sent</string>
+    <string name="error_RULE_NOT_ACTIVE">Schedule is no longer active</string>
+    <string name="error_STALE_RULE_OCCURRENCE">Schedule changed before execution</string>
     <string name="error_NO_NETWORK">No network connection</string>
     <string name="error_UNKNOWN_UI_STATE">Unrecognized WhatsApp screen</string>
     <string name="error_UNKNOWN_ERROR">Unknown error</string>

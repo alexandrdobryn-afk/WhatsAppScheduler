@@ -1,16 +1,17 @@
 package com.example.wascheduler.core.locale
 
-import android.app.LocaleManager
 import android.content.Context
-import android.os.Build
-import android.os.LocaleList
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.example.wascheduler.data.repository.AppLanguage
 
 object AppLocaleController {
-    fun apply(context: Context, language: AppLanguage) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.getSystemService(LocaleManager::class.java).applicationLocales =
-                language.languageTag?.let(LocaleList::forLanguageTags) ?: LocaleList.getEmptyLocaleList()
-        }
+    fun localeListFor(language: AppLanguage): LocaleListCompat =
+        language.languageTag
+            ?.let(LocaleListCompat::forLanguageTags)
+            ?: LocaleListCompat.getEmptyLocaleList()
+
+    fun apply(@Suppress("UNUSED_PARAMETER") context: Context, language: AppLanguage) {
+        AppCompatDelegate.setApplicationLocales(localeListFor(language))
     }
 }

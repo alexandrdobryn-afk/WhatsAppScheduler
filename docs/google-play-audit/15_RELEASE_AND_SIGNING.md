@@ -7,14 +7,14 @@ Release artifacts rebuilt after remediation:
 
 Current release artifact hashes:
 
-- APK SHA-256: `24c26f4fe1391c5e54622673b4f6200df23d610cea071741517649117dd08197`
-- AAB SHA-256: `b184dac61916919fd87d9580e80452cbccecd0a1f18d49013dddf8891d69e2c0`
+- APK SHA-256: `ff88a30d9f41c9f9a2191c8208f403ad76d38bc21fd99475a680dec764d903f6`
+- AAB SHA-256: `6e15d1e82d3e8f48c972acca199ef427b8eb93c2b76bc406755f0de8e1cdcf2a`
 
 Badging after remediation:
 
 - Package: `io.github.alexandrdobryn.waschedule`
-- Version code: `6`
-- Version name: `0.1.5`
+- Version code: `7`
+- Version name: `0.1.6`
 - Min SDK: `31`
 - Target SDK: `36`
 - Compile SDK: `36`
