@@ -2,12 +2,14 @@ package com.example.wascheduler.feature.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -52,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.wascheduler.R
@@ -64,6 +67,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val summaryDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+
+internal data class MultipleDateTimeBadgeSummary(
+    val visibleBadges: List<String>,
+    val hiddenCount: Int
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -285,13 +293,29 @@ private fun RuleSummaryCard(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AssistChip(onClick = onClick, label = { Text(timeSummary(rule), maxLines = 1, overflow = TextOverflow.Ellipsis) })
-                Switch(checked = rule.enabled, onCheckedChange = onToggle)
+            if (rule.scheduleType == ScheduleType.MULTIPLE_DATES) {
+                MultipleDateBadges(rule = rule)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        stringResource(R.string.home_automation_active),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Switch(checked = rule.enabled, onCheckedChange = onToggle)
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AssistChip(onClick = onClick, label = { Text(timeSummary(rule), maxLines = 1, overflow = TextOverflow.Ellipsis) })
+                    Switch(checked = rule.enabled, onCheckedChange = onToggle)
+                }
             }
             DropdownMenu(
                 expanded = menuExpanded,
@@ -352,10 +376,7 @@ private fun scheduleSummary(rule: Rule): String =
             val date = rule.dates.firstOrNull()?.format(summaryDateFormatter) ?: stringResource(R.string.status_unknown)
             "${stringResource(R.string.schedule_type_specific_date)} · $date"
         }
-        ScheduleType.MULTIPLE_DATES -> {
-            val dates = rule.dates.joinToString(" ") { it.format(summaryDateFormatter) }
-            "${stringResource(R.string.schedule_type_multiple_dates)} · $dates"
-        }
+        ScheduleType.MULTIPLE_DATES -> stringResource(R.string.schedule_type_multiple_dates)
     }
 
 private fun timeSummary(rule: Rule): String =
@@ -369,6 +390,70 @@ private fun timeSummary(rule: Rule): String =
     } else {
         rule.times.joinToString("  ") { it.localTime.toString() }
     }
+
+@Composable
+private fun MultipleDateBadges(rule: Rule) {
+    val summary = multipleDateTimeBadgeSummary(rule)
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        summary.visibleBadges.chunked(2).forEach { rowBadges ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                rowBadges.forEach { badge ->
+                    DateTimeBadge(text = badge, modifier = Modifier.weight(1f))
+                }
+                if (rowBadges.size == 1) {
+                    Spacer(Modifier.weight(1f))
+                }
+            }
+        }
+        if (summary.hiddenCount > 0) {
+            Text(
+                text = stringResource(R.string.home_more_scheduled, summary.hiddenCount),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+@Composable
+private fun DateTimeBadge(text: String, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.heightIn(min = 36.dp),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+internal fun multipleDateTimeBadgeSummary(
+    rule: Rule,
+    maxVisible: Int = 4
+): MultipleDateTimeBadgeSummary {
+    val badges = rule.times
+        .filter { it.localDate != null }
+        .sortedWith(compareBy({ it.localDate }, { it.localTime }))
+        .map { time -> "${time.localDate!!.format(summaryDateFormatter)} · ${time.localTime}" }
+    return MultipleDateTimeBadgeSummary(
+        visibleBadges = badges.take(maxVisible),
+        hiddenCount = (badges.size - maxVisible).coerceAtLeast(0)
+    )
+}
 
 private val DayOfWeek.shortLabelRes: Int
     get() = when (this) {

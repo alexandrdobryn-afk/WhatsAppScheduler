@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -62,6 +63,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -186,24 +189,27 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenDiagnostics: () -> Unit) 
             item {
                 SettingsSection(title = stringResource(R.string.settings_general)) {
                     SubsectionLabel(stringResource(R.string.settings_theme))
-                    ChoiceRow(AppTheme.SYSTEM, theme, R.string.settings_theme_system, viewModel::setTheme)
-                    ChoiceRow(AppTheme.LIGHT, theme, R.string.settings_theme_light, viewModel::setTheme)
-                    ChoiceRow(AppTheme.DARK, theme, R.string.settings_theme_dark, viewModel::setTheme)
+                    CompactChoiceRow(
+                        choices = listOf(
+                            AppTheme.SYSTEM to R.string.settings_theme_system,
+                            AppTheme.LIGHT to R.string.settings_theme_light,
+                            AppTheme.DARK to R.string.settings_theme_dark
+                        ),
+                        current = theme,
+                        onSelected = viewModel::setTheme
+                    )
 
                     SubsectionLabel(stringResource(R.string.settings_language), modifier = Modifier.padding(top = 8.dp))
-                    ChoiceRow(AppLanguage.SYSTEM, language, R.string.settings_language_system) { selected ->
-                        viewModel.setLanguage(selected)
-                        context.findActivity()?.recreate()
-                    }
-                    ChoiceRow(AppLanguage.RU, language, R.string.settings_language_ru) { selected ->
-                        viewModel.setLanguage(selected)
-                        context.findActivity()?.recreate()
-                    }
-                    ChoiceRow(AppLanguage.UK, language, R.string.settings_language_uk) { selected ->
-                        viewModel.setLanguage(selected)
-                        context.findActivity()?.recreate()
-                    }
-                    ChoiceRow(AppLanguage.EN, language, R.string.settings_language_en) { selected ->
+                    CompactChoiceGrid(
+                        choices = listOf(
+                            AppLanguage.SYSTEM to R.string.settings_language_system,
+                            AppLanguage.RU to R.string.settings_language_ru,
+                            AppLanguage.UK to R.string.settings_language_uk,
+                            AppLanguage.EN to R.string.settings_language_en
+                        ),
+                        current = language,
+                        columns = 2
+                    ) { selected ->
                         viewModel.setLanguage(selected)
                         context.findActivity()?.recreate()
                     }
@@ -588,6 +594,88 @@ private fun <T> ChoiceRow(value: T, current: T, labelRes: Int, onSelected: (T) -
     ) {
         RadioButton(selected = value == current, onClick = { onSelected(value) })
         SettingsLabel(stringResource(labelRes), modifier = Modifier.padding(start = 4.dp))
+    }
+}
+
+@Composable
+private fun <T> CompactChoiceRow(
+    choices: List<Pair<T, Int>>,
+    current: T,
+    onSelected: (T) -> Unit
+) {
+    CompactChoiceGrid(
+        choices = choices,
+        current = current,
+        columns = choices.size,
+        onSelected = onSelected
+    )
+}
+
+@Composable
+private fun <T> CompactChoiceGrid(
+    choices: List<Pair<T, Int>>,
+    current: T,
+    columns: Int,
+    onSelected: (T) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        choices.chunked(columns).forEach { rowChoices ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                rowChoices.forEach { (value, labelRes) ->
+                    CompactChoice(
+                        label = stringResource(labelRes),
+                        selected = value == current,
+                        onClick = { onSelected(value) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                repeat(columns - rowChoices.size) {
+                    Box(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactChoice(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val container = if (selected) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+    val content = if (selected) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Surface(
+        modifier = modifier.heightIn(min = 48.dp).clickable(onClick = onClick),
+        shape = MaterialTheme.shapes.medium,
+        color = container
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                color = content,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 

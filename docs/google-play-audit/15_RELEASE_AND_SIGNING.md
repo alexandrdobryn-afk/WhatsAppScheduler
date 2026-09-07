@@ -7,14 +7,14 @@ Release artifacts rebuilt after remediation:
 
 Current release artifact hashes:
 
-- APK SHA-256: `ff88a30d9f41c9f9a2191c8208f403ad76d38bc21fd99475a680dec764d903f6`
-- AAB SHA-256: `6e15d1e82d3e8f48c972acca199ef427b8eb93c2b76bc406755f0de8e1cdcf2a`
+- APK SHA-256: `c6e6699286551e423406bb4ec9001ca4c04512e34bb16859c2fff818ee4958a2`
+- AAB SHA-256: `c4d479c0ee0cfeb620d1fb3e2f09d4a2f5a9fddeff4566c378147ccb164c3b2c`
 
 Badging after remediation:
 
 - Package: `io.github.alexandrdobryn.waschedule`
-- Version code: `7`
-- Version name: `0.1.6`
+- Version code: `8`
+- Version name: `0.1.7`
 - Min SDK: `31`
 - Target SDK: `36`
 - Compile SDK: `36`
@@ -39,5 +39,5 @@ Play readiness:
 - AAB signed by Gradle: PASS
 - APK signature verified: PASS
 - Target SDK requirement: PASS
-- Runtime validation: NOT TESTED
+- Runtime validation: PARTIAL LAUNCH ONLY; WhatsApp E2E NOT TESTED
 - Public Privacy Policy URL: HTTP 200 verified for `/privacy/` on 2026-09-02; verify again after push/deploy if Pages content changes.

@@ -36,8 +36,8 @@ android {
         // Minimum tested per spec: Android 12 (API 31)
         minSdk = 31
         targetSdk = 36
-        versionCode = 7
-        versionName = "0.1.6"
+        versionCode = 8
+        versionName = "0.1.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

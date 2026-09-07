@@ -1,13 +1,13 @@
 # Technical Release Audit
 
-Repository root used: `C:\Users\Admin\Desktop\WhatsAppScheduler\WhatsAppScheduler`
+Repository root used: `C:\Users\Admin\Desktop\WhatsAppScheduler\wa-schedule-0.1.6`
 
 Core Android configuration after remediation:
 
 - Application id: `io.github.alexandrdobryn.waschedule`
 - Namespace: `com.example.wascheduler`
-- Version code: `7`
-- Version name: `0.1.6`
+- Version code: `8`
+- Version name: `0.1.7`
 - Min SDK: `31`
 - Compile SDK: `36`
 - Target SDK: `36`
@@ -21,7 +21,7 @@ Technical status:
 - Local build readiness: PASS
 - Play target API blocker: PASS
 - Release artifact readiness: PASS
-- Runtime readiness: NOT TESTED
+- Runtime readiness: PARTIAL LAUNCH ONLY; WhatsApp E2E NOT TESTED
 - Production readiness: NO
 
 Android 16 behavior-change review:
@@ -48,12 +48,15 @@ Mandatory commands run after remediation:
 .\gradlew.bat :app:assembleRelease --no-daemon
 .\gradlew.bat :app:bundleRelease --no-daemon
 .\gradlew.bat :app:compileDebugAndroidTestKotlin --no-daemon
+.\gradlew.bat :app:connectedDebugAndroidTest --no-daemon
 ```
 
-Result: all six commands completed with `BUILD SUCCESSFUL`.
+Result: release 0.1.7 commands completed with `BUILD SUCCESSFUL`. `connectedDebugAndroidTest` ran 7 tests on `ActionBoxQA(AVD) - 15`.
 
 Build caveats:
 
 - Local SDK Platform 36 had to be installed into `.toolchain/android-sdk`.
 - `local.properties` was changed locally to use that writable SDK path; this file is ignored and must not be committed.
 - Gradle reports an Android SDK XML version warning and a non-fatal metrics warning for `C:\Users\Admin\.android`.
+- Kotlin daemon access to `%LOCALAPPDATA%` may fail in the sandbox; Gradle fallback compilation completed successfully.
+- Release APK 0.1.7 installed and cold-launched on emulator. WhatsApp was not installed, so scheduled WhatsApp send runtime remains NOT TESTED.

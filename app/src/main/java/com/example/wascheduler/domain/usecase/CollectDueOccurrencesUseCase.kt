@@ -1,9 +1,9 @@
 package com.example.wascheduler.domain.usecase
 
+import com.example.wascheduler.core.automation.ExecutionWindowPolicy
 import com.example.wascheduler.domain.model.Rule
 import com.example.wascheduler.domain.model.RuleTime
 import com.example.wascheduler.domain.model.ScheduleType
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -68,9 +68,7 @@ class CollectDueOccurrencesUseCase @Inject constructor() {
         results: MutableList<DueOccurrence>
     ) {
         val scheduledZoned = ZonedDateTime.of(today, localTime, zoneId)
-        if (scheduledZoned.isAfter(now)) return
-        val minutesLate = Duration.between(scheduledZoned, now).toMinutes()
-        if (minutesLate > rule.allowedDelayMinutes) return
+        if (!ExecutionWindowPolicy.isWithinWindow(scheduledZoned.toLocalDateTime(), now.toLocalDateTime(), rule.allowedDelayMinutes)) return
         results += DueOccurrence(rule, scheduledZoned.toLocalDateTime())
     }
 }

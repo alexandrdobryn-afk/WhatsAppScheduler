@@ -22,7 +22,6 @@ import com.example.wascheduler.domain.repository.ExecutionRepository
 import com.example.wascheduler.domain.repository.RuleRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import javax.inject.Inject
@@ -87,9 +86,7 @@ class AutomationEngine @Inject constructor(
         val scheduleZoneId = scheduleTimeZoneProvider.currentZoneId()
         val nowInScheduleZone = ZonedDateTime.now(scheduleZoneId).toLocalDateTime()
 
-        val allowedDelay = executableRule.allowedDelayMinutes.toLong()
-        val minutesLate = Duration.between(scheduledAt, nowInScheduleZone).toMinutes()
-        if (minutesLate > allowedDelay) {
+        if (!ExecutionWindowPolicy.isWithinWindow(scheduledAt, nowInScheduleZone, executableRule.allowedDelayMinutes)) {
             recordTerminal(occurrenceId, executableRule, scheduledAt, attemptNumber, ExecutionStatus.SKIPPED, ErrorCode.MISSED_WINDOW)
             return EngineOutcome.Skipped
         }

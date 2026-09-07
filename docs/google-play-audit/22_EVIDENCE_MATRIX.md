@@ -6,12 +6,12 @@
 | Target API policy | Android 16 / API 36 required for uploads starting 2026-08-31 | PASS |
 | Build | `:app:assembleDebug` | PASS |
 | Unit tests | `:app:testDebugUnitTest` | PASS |
-| Lint | `:app:lintDebug` | PASS with 58 warnings |
+| Lint | `:app:lintDebug` | PASS |
 | Release APK | `:app:assembleRelease` | PASS |
 | Release AAB | `:app:bundleRelease` | PASS |
 | Debug androidTest compile | `:app:compileDebugAndroidTestKotlin` | PASS |
 | Package identity | `io.github.alexandrdobryn.waschedule` | PASS |
-| Version | `versionCode=7`, `versionName=0.1.6` | PASS |
+| Version | `versionCode=8`, `versionName=0.1.7` | PASS |
 | APK signature | `apksigner verify --verbose --print-certs` | PASS |
 | AAB signature | `jarsigner -verify -certs` reports `jar verified` | PASS with warnings |
 | Merged manifest exact alarm | `SCHEDULE_EXACT_ALARM` present | PASS |
@@ -30,9 +30,10 @@
 | In-app Support contact | Settings -> About -> Support opens `mailto:alexapp.support@gmail.com` | PASS |
 | Support contact | `alexapp.support@gmail.com` | PASS |
 | Accessibility disclosure strings | EN/RU/UK resources updated to final declaration meaning | PASS |
-| ADB device | `adb devices -l` showed no devices | NOT AVAILABLE |
-| Runtime instrumentation | Requires connected emulator/device | NOT TESTED |
-| WhatsApp E2E | Requires WhatsApp on emulator/device | NOT TESTED |
+| ADB device | `adb devices` showed `emulator-5580 device` | AVAILABLE |
+| Runtime instrumentation | `:app:connectedDebugAndroidTest` ran 7 tests on `ActionBoxQA(AVD) - 15` | PASS |
+| Release launch | Release APK installed and cold-launched MainActivity with `Status: ok` | PASS |
+| WhatsApp E2E | WhatsApp package not installed on emulator | NOT TESTED |
 | Screen-off/lock | Requires emulator/device | NOT TESTED |
 | Migration | Requires old install/state | NOT TESTED |
 | Reliability 30 sends | Requires emulator/device | NOT TESTED |

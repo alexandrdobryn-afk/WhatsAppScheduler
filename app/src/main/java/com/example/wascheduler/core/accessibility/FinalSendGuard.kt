@@ -1,5 +1,6 @@
 package com.example.wascheduler.core.accessibility
 
+import com.example.wascheduler.core.automation.ExecutionWindowPolicy
 import com.example.wascheduler.domain.model.ErrorCode
 import java.time.LocalDateTime
 
@@ -44,7 +45,7 @@ object FinalSendGuard {
         val allowedDelayMinutes = input.allowedDelayMinutes
         val now = input.now
         if (scheduledAt != null && allowedDelayMinutes != null && now != null) {
-            if (now.isAfter(scheduledAt.plusMinutes(allowedDelayMinutes.toLong()))) {
+            if (!ExecutionWindowPolicy.isWithinWindow(scheduledAt, now, allowedDelayMinutes)) {
                 return FinalSendGuardDecision.Block(ErrorCode.MISSED_WINDOW)
             }
         }

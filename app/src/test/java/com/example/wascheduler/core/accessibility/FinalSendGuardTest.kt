@@ -51,6 +51,49 @@ class FinalSendGuardTest {
         assertBlocked(validInput.copy(now = LocalDateTime.of(2026, 9, 5, 14, 11)), ErrorCode.MISSED_WINDOW)
     }
 
+    @Test
+    fun `zero allowed delay allows send inside scheduled minute`() {
+        val scheduledAt = LocalDateTime.of(2026, 9, 7, 2, 34, 0)
+
+        assertTrue(
+            FinalSendGuard.evaluate(
+                validInput.copy(
+                    scheduledAt = scheduledAt,
+                    allowedDelayMinutes = 0,
+                    now = scheduledAt.plusSeconds(59)
+                )
+            ) is FinalSendGuardDecision.Allow
+        )
+    }
+
+    @Test
+    fun `zero allowed delay blocks after scheduled minute`() {
+        val scheduledAt = LocalDateTime.of(2026, 9, 7, 2, 34, 0)
+
+        assertBlocked(
+            validInput.copy(
+                scheduledAt = scheduledAt,
+                allowedDelayMinutes = 0,
+                now = scheduledAt.plusMinutes(1)
+            ),
+            ErrorCode.MISSED_WINDOW
+        )
+    }
+
+    @Test
+    fun `final guard blocks send before scheduled time`() {
+        val scheduledAt = LocalDateTime.of(2026, 9, 7, 2, 34, 0)
+
+        assertBlocked(
+            validInput.copy(
+                scheduledAt = scheduledAt,
+                allowedDelayMinutes = 10,
+                now = scheduledAt.minusSeconds(1)
+            ),
+            ErrorCode.MISSED_WINDOW
+        )
+    }
+
     private fun assertBlocked(input: FinalSendGuardInput, expected: ErrorCode) {
         val decision = FinalSendGuard.evaluate(input)
         assertTrue(decision is FinalSendGuardDecision.Block)
